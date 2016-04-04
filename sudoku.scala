@@ -16,6 +16,9 @@
 
 import scala.math.Ordered.orderingToOrdered
 
+import scala.collection.mutable.HashMap
+import scala.collection.immutable.{Set, SortedSet}
+
 package Sudoku {
   class Position(val row: Int, val column: Int) extends Ordered[Position] {
     if (!(1 <= row && row <= 9) || !(1 <= column && column <= 9)) {
@@ -84,38 +87,75 @@ package Sudoku {
     }
   }
 
-  class Solver(val grid: collection.mutable.HashMap[Position, Cell]) {
-    var candidates = List[Cell]()
-    var unsolved = List[Cell]()
+  class Solver(val grid: HashMap[Position, Cell]) {
+    var candidates = SortedSet[Cell]()
+    var solved = SortedSet[Cell]()
+    var unsolved = SortedSet[Cell]()
+
+    def init_solved {
+      solved = SortedSet[Cell]()
+      for ((pos, cell) <- grid) {
+        if (cell.is_solved) {
+          solved += cell
+        }
+      }
+    }
 
     def init_unsolved {
-      unsolved = List[Cell]()
+      unsolved = SortedSet[Cell]()
 
       for ((pos, cell) <- grid) {
         if (!cell.is_solved) {
-          unsolved = cell :: unsolved
+          unsolved += cell
         }
       }
-      unsolved = unsolved.sorted
+    }
+
+    def init_candidates {
+      candidates = SortedSet[Cell]()
+
+      unsolved.foreach {
+        cell =>
+          for (i <- 1 to 9) {
+            candidates += new Cell(cell.pos, i)
+          }
+      }
+    }
+
+    def update_cell(cell: Cell) : SortedSet[Cell] = {
+      val removed : SortedSet[Cell] = candidates.filter(
+        cell2 =>
+          cell2.pos == cell.pos ||
+        (cell2.value == cell.value && cell2.pos.sees(cell.pos)))
+      candidates = candidates -- removed
+      removed
     }
 
     init_unsolved
-    unsolved.foreach {
-      cell =>
-        for (i <- 1 to 9) {
-          candidates = new Cell(cell.pos, i) :: candidates
-        }
+    init_solved
+    init_candidates
+    solved.foreach { cell => update_cell(cell) }
+
+    def get_row(i: Integer) : SortedSet[Cell] = {
+      candidates.filter { cell => cell.pos.row == i }
     }
-    candidates = candidates.reverse
+
+    def get_column(i: Integer) : SortedSet[Cell] = {
+      candidates.filter { cell => cell.pos.column == i }
+    }
+
+    def get_box(i: Integer) : SortedSet[Cell] = {
+      candidates.filter { cell => cell.pos.box == i }
+    }
   }
 
   object Solver {
-    def from_string(str: String) : collection.mutable.HashMap[Position, Cell] = {
+    def from_string(str: String) : HashMap[Position, Cell] = {
       if (str.length != 81) {
         throw new IllegalArgumentException("Invalid grid length")
       }
 
-      var grid = collection.mutable.HashMap[Position, Cell]()
+      var grid = HashMap[Position, Cell]()
 
       var i : Int = 1
       var j : Int = 1
