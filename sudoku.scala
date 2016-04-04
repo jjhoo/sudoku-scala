@@ -64,7 +64,7 @@ package Sudoku {
     }
 
     override def toString : String = {
-      "(" + row.toString + ", " + column.toString + ")"
+      s"($row, $column)"
     }
 
     override def compare(other: Position) : Int = {
@@ -82,8 +82,7 @@ package Sudoku {
     }
 
     override def toString : String = {
-      ("(" + pos.row.toString + ", " + pos.column.toString
-       + ", " + value.toString + ")")
+      s"(${pos.row}, ${pos.column}, $value)"
     }
 
     override def compare(other: Cell) : Int = {
