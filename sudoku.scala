@@ -18,8 +18,12 @@ import scala.math.Ordered.orderingToOrdered
 
 import scala.collection.mutable.HashMap
 import scala.collection.immutable.{Set, SortedSet}
+import scala.util.control.Breaks
 
 package Sudoku {
+  case class CellError(name: String)
+       extends Exception(s"No such cell: $name")
+
   class Position(val row: Int, val column: Int) extends Ordered[Position] {
     if (!(1 <= row && row <= 9) || !(1 <= column && column <= 9)) {
       throw new IllegalArgumentException("Invalid row/column")
@@ -136,6 +140,26 @@ package Sudoku {
     init_candidates
     solved.foreach { cell => update_cell(cell) }
 
+    def update_grid(found: SortedSet[Cell]) : SortedSet[Cell] = {
+      var removed = SortedSet[Cell]()
+
+      found.foreach {
+        x => {
+          var opt = grid.get(x.pos)
+          opt match {
+            case Some(cell) => {
+              cell.value = x.value
+              solved += cell
+              unsolved -= cell
+              removed = removed ++ update_cell(x)
+            }
+            case None => CellError(x.pos.toString)
+          }
+        }
+      }
+      removed
+    }
+
     def get_row(i: Integer) : SortedSet[Cell] = {
       candidates.filter { cell => cell.pos.row == i }
     }
@@ -146,6 +170,115 @@ package Sudoku {
 
     def get_box(i: Integer) : SortedSet[Cell] = {
       candidates.filter { cell => cell.pos.box == i }
+    }
+
+    def eliminator(f: SortedSet[Cell] => SortedSet[Cell]) : SortedSet[Cell] = {
+      var found = SortedSet[Cell]()
+
+      for (i <- 1 to 9) {
+        found = found ++ f(get_row(i))
+        found = found ++ f(get_column(i))
+        found = found ++ f(get_box(i))
+      }
+      println(found)
+      found
+    }
+
+    def find_singles_simple () : (SortedSet[Cell], SortedSet[Cell]) = {
+      val fun = (set: SortedSet[Cell]) => {
+        var solved = SortedSet[Cell]()
+        val poss  = set.map(_.pos)
+
+        poss.foreach {
+          pos =>
+            val xs = set.filter { x => x.pos == pos }
+            if (xs.size == 1) {
+              solved += xs.firstKey
+            }
+        }
+        solved
+      } : SortedSet[Cell]
+
+      val result = eliminator(fun)
+
+      if (result.size > 0) {
+        val removed = update_grid(result)
+        (result, removed)
+      } else {
+        (result, SortedSet[Cell]())
+      }
+    }
+
+    def find_singles () : (SortedSet[Cell], SortedSet[Cell]) = {
+      val fun = (set: SortedSet[Cell]) => {
+        var solved = SortedSet[Cell]()
+        val nums = set.map(_.value)
+
+        nums.foreach {
+          num =>
+            val nset = set.filter { cell => cell.value == num }
+            if (nset.size == 1) {
+              solved += nset.firstKey
+            }
+        }
+        solved
+      } : SortedSet[Cell]
+
+      val result = eliminator(fun)
+
+      if (result.size > 0) {
+        val removed = update_grid(result)
+        (result, removed)
+      } else {
+        (result, SortedSet[Cell]())
+      }
+    }
+
+    def step : (SortedSet[Cell], SortedSet[Cell]) = {
+      val finders : List[() => (SortedSet[Cell], SortedSet[Cell])] = List(this.find_singles_simple)
+      var solved = SortedSet[Cell]()
+      var removed = SortedSet[Cell]()
+
+      var loop = new Breaks;
+
+      loop.breakable {
+        for (fun <- finders) {
+          val res = fun()
+
+          solved = res._1
+          removed = res._2
+          if (solved.size > 0 || removed.size > 0) {
+            loop.break
+          }
+        }
+      }
+      (solved, removed)
+    }
+
+    def solve {
+      var cont = true
+      var solved = SortedSet[Cell]()
+      var removed = SortedSet[Cell]()
+
+      while (cont) {
+        val res = step
+
+        solved = res._1
+        removed = res._2
+
+        if (is_solved) {
+          cont = false
+          println("solved")
+        }
+
+        if (solved.size == 0 && removed.size == 0) {
+          cont = false
+          println("no progress")
+        }
+      }
+    }
+    def is_solved : Boolean = {
+      candidates.size == 0
     }
   }
 
@@ -181,14 +314,23 @@ package Sudoku {
       val other = new Position(5, 5)
 
       // val solver = new Solver(grid)
-      val grid = "014600300050000007090840100000400800600050009007009000008016030300000010009008570"
+      // val grid = "014600300050000007090840100000400800600050009007009000008016030300000010009008570"
+      val grid = "500069000820070000001002005000700950060000080035008000700800200000040067000390004"
       val gridmap = Solver.from_string(grid)
       val solver = new Solver(gridmap)
 
       println(pos == other)
       println(pos == grid)
-      println(solver.candidates)
-      // println(gridmap)
+      println(solver.candidates.size)
+
+      val map1 = gridmap.filter { case (k, v) => v.value != 0}
+      solver.solve
+      val map2 = gridmap.filter { case (k, v) => v.value != 0}
+
+      println(solver.candidates.size)
+      println(gridmap.filter { case (k, v) => v.value != 0})
+
+      println(map2.keySet -- map1.keySet)
     }
   }
 }
