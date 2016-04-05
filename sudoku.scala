@@ -246,7 +246,8 @@ package Sudoku {
         this.find_naked_quads,
         this.find_hidden_pairs,
         this.find_hidden_triples,
-        this.find_hidden_quads)
+        this.find_hidden_quads,
+        this.find_pointing_pairs)
 
       var solved = SortedSet[Cell]()
       var removed = SortedSet[Cell]()
@@ -464,6 +465,62 @@ package Sudoku {
     def find_hidden_quads () : (SortedSet[Cell], SortedSet[Cell]) = {
       find_hidden_groups(4)
     }
+
+    def find_pointing_pairs () : (SortedSet[Cell], SortedSet[Cell]) = {
+      val fun = (set: SortedSet[Cell],
+                 psamel: (Position, Position) => Boolean) => {
+        var found = SortedSet[Cell]()
+        val nums = set.map(_.value)
+
+        if (set.size > 2 && nums.size > 2) {
+          for (x <- nums) {
+            val nset = set.filter(cell => cell.value == x)
+
+            if (nset.size > 2) {
+              for (a <- nset) {
+                for (b <- nset) {
+                  if (a.pos != b.pos) {
+                    if (a.pos.box == b.pos.box && psamel(a.pos, b.pos)) {
+                      var bset = get_box(a.pos.box)
+                      bset = bset.filter(cell => cell.value == x)
+
+                      if (bset.size == 2) {
+                        found = found ++ nset.filter {
+                          cell => !(cell.pos == a.pos || cell.pos == b.pos)
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        found
+      } : SortedSet[Cell]
+
+      var found = SortedSet[Cell]()
+      for (i <- 1 to 9) {
+        val set = get_row(i)
+        val fun2 = (a: Position, b: Position) => {
+          a.row == b.row
+        } : Boolean
+        found = found ++ fun(set, fun2)
+      }
+
+      for (i <- 1 to 9) {
+        val set = get_column(i)
+        val fun2 = (a: Position, b: Position) => {
+          a.column == b.column
+        } : Boolean
+        found = found ++ fun(set, fun2)
+      }
+
+      if (found.size > 0) {
+        update_candidates(found)
+      }
+      (SortedSet[Cell](), found)
+    }
   }
 
   object Solver {
@@ -498,8 +555,8 @@ package Sudoku {
       val other = new Position(5, 5)
 
       // val solver = new Solver(grid)
-      // val grid = "014600300050000007090840100000400800600050009007009000008016030300000010009008570"
-      val grid = "500069000820070000001002005000700950060000080035008000700800200000040067000390004"
+      val grid = "014600300050000007090840100000400800600050009007009000008016030300000010009008570"
+      // val grid = "500069000820070000001002005000700950060000080035008000700800200000040067000390004"
       val gridmap = Solver.from_string(grid)
       val solver = new Solver(gridmap)
 
@@ -518,6 +575,7 @@ package Sudoku {
 
       println(map2.keySet -- map1.keySet)
       println(s"Grid is valid: ${solver.is_valid}")
+      println(s"Solved?: ${solver.is_solved}")
     }
   }
 }
