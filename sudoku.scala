@@ -359,9 +359,9 @@ package Sudoku {
 
             nums.toList.combinations(limit).foreach {
               xs =>
-                var nxs = xs.toSet
+                val nxs = xs.toSet
                 val hits = cells.filter {
-                  case (pos, ys) => (nxs == ys) || (nums -- nxs).size == 0
+                  case (pos, ys) => (nxs == ys) || (ys -- nxs).size == 0
                 }
 
                 if (hits.size == limit) {
