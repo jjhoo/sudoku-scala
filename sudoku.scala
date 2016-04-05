@@ -247,7 +247,8 @@ package Sudoku {
         this.find_hidden_pairs,
         this.find_hidden_triples,
         this.find_hidden_quads,
-        this.find_pointing_pairs)
+        this.find_pointing_pairs,
+        this.find_ywings)
 
       var solved = SortedSet[Cell]()
       var removed = SortedSet[Cell]()
@@ -514,6 +515,44 @@ package Sudoku {
           a.column == b.column
         } : Boolean
         found = found ++ fun(set, fun2)
+      }
+
+      if (found.size > 0) {
+        update_candidates(found)
+      }
+      (SortedSet[Cell](), found)
+    }
+
+    def find_ywings () : (SortedSet[Cell], SortedSet[Cell]) = {
+      var found = SortedSet[Cell]()
+
+      val coords = candidates.map(_.pos)
+      var cells = List[(Position, Set[Int])]()
+
+      for (pos <- coords) {
+        val xs = candidates.filter(_.pos == pos).toList
+        if (xs.size == 2) {
+          cells = (xs(0).pos, xs.map(_.value).toSet) :: cells
+        }
+      }
+
+      for ((a, anums) <- cells) {
+        for ((b, bnums) <- cells) {
+          if (a != b) {
+            val tmp = anums.intersect(bnums)
+            for ((hinge, hnums) <- cells) {
+              if (!(a == hinge || b == hinge || anums == bnums || anums == hnums) && tmp.size == 1) {
+                val z = tmp.toList(0)
+                if (hnums == ((anums ++ bnums) -- tmp) && hinge.sees(a) && hinge.sees(b)) {
+                  found = found ++ candidates.filter {
+                    cell =>
+                      cell.value == z && a.sees(cell.pos) && b.sees(cell.pos)
+                  }
+                }
+              }
+            }
+          }
+        }
       }
 
       if (found.size > 0) {
