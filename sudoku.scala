@@ -248,6 +248,7 @@ package Sudoku {
         this.find_hidden_triples,
         this.find_hidden_quads,
         this.find_pointing_pairs,
+        this.find_xwings,
         this.find_ywings)
 
       var solved = SortedSet[Cell]()
@@ -398,6 +399,10 @@ package Sudoku {
       find_naked_groups(4)
     }
 
+    def numbers (set: SortedSet[Cell]) : List[Int] = {
+      set.toList.map(_.value).sorted
+    }
+
     def number_counts(numbers: List[Int], target: Int) : Set[(Int, Int)] = {
       var result = List[(Int, Int)]()
 
@@ -412,7 +417,7 @@ package Sudoku {
       val fun = (set: SortedSet[Cell]) => {
         var found = SortedSet[Cell]()
 
-        val nums = set.map(_.value).toList.sorted
+        val nums = numbers(set)
         val ncts = number_counts(nums, limit)
         val unums = ncts.map(_._2)
         val usable = limit + 1
@@ -560,6 +565,77 @@ package Sudoku {
       }
       (SortedSet[Cell](), found)
     }
+
+    def find_xwings () : (SortedSet[Cell], SortedSet[Cell]) = {
+      val fun = (getset: Int => SortedSet[Cell],
+                 getotherset: Int => SortedSet[Cell],
+                 getpos: Position => Int,
+                 getotherpos: Position => Int) => {
+        var found = SortedSet[Cell]()
+
+        for (i <- 1 to 8) {
+          val j0 = i + 1
+          val aset = getset(i)
+          val anums = numbers(aset)
+          val as = number_counts(anums, 2)
+
+          if (as.size > 0) {
+            for (j <- j0 to 9) {
+              val bset = getset(j)
+              val bnums = numbers(bset)
+              val bs = number_counts(bnums, 2)
+
+              if (bs.size > 0) {
+                for ((a, _) <- as) {
+                  for ((b, _) <- bs) {
+                    if (a == b) {
+                      val apos = aset.filter {
+                        cell => cell.value == a
+                      } . map {
+                        cell => getpos(cell.pos)
+                      }
+                      val bpos = bset.filter {
+                        cell => cell.value == b
+                      } . map {
+                        cell => getpos(cell.pos)
+                      }
+
+                      if (apos.size == 2 && apos == bpos) {
+                        val napos = apos.toList
+                        found = found ++ getotherset(napos(0)).filter(
+                          cell => (cell.value == a
+                                   && getotherpos(cell.pos) != i
+                                   && getotherpos(cell.pos) != j))
+
+                        found = found ++ getotherset(napos(1)).filter(
+                          cell => (cell.value == a
+                                   && getotherpos(cell.pos) != i
+                                   && getotherpos(cell.pos) != j))
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        found
+      } : SortedSet[Cell]
+
+      var found = SortedSet[Cell]()
+      val fun1 = (row: Int) => { get_row(row) } : SortedSet[Sudoku.Cell]
+      val fun2 = (col: Int) => { get_column(col) } : SortedSet[Sudoku.Cell]
+      found = found ++ fun(fun1, fun2,
+                           (pos: Position) => { pos.column } : Int,
+                           (pos: Position) => { pos.row } : Int)
+      found = found ++ fun(fun2, fun1,
+                           (pos: Position) => { pos.row } : Int,
+                           (pos: Position) => { pos.column } : Int)
+      if (found.size > 0) {
+        update_candidates(found)
+      }
+      (SortedSet[Cell](), found)
+    }
   }
 
   object Solver {
@@ -594,8 +670,15 @@ package Sudoku {
       val other = new Position(5, 5)
 
       // val solver = new Solver(grid)
-      val grid = "014600300050000007090840100000400800600050009007009000008016030300000010009008570"
+      // val grid = "014600300050000007090840100000400800600050009007009000008016030300000010009008570"
       // val grid = "500069000820070000001002005000700950060000080035008000700800200000040067000390004"
+      // val grid = "200068050008002000560004801000000530400000002097000000804300096000800300030490007"
+      // x-wing
+      val grid = "000030802020600040009504060090000200780000034006000070050401300060007010102080000"
+      // xyz-wing
+      // val grid = "100002000050090204000006700034001005500908007800400320009600000306010040000700009"
+      // val grid = "610320000300400000058600000009503620000040000023801500000006750000004003000058014"
+
       val gridmap = Solver.from_string(grid)
       val solver = new Solver(gridmap)
 
