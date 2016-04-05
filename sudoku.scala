@@ -140,6 +140,10 @@ package Sudoku {
     init_candidates
     solved.foreach { cell => update_cell(cell) }
 
+    def update_candidates(found: SortedSet[Cell]) {
+      candidates = candidates -- found
+    }
+
     def update_grid(found: SortedSet[Cell]) : SortedSet[Cell] = {
       var removed = SortedSet[Cell]()
 
@@ -234,7 +238,13 @@ package Sudoku {
     }
 
     def step : (SortedSet[Cell], SortedSet[Cell]) = {
-      val finders : List[() => (SortedSet[Cell], SortedSet[Cell])] = List(this.find_singles_simple)
+      val finders : List[() => (SortedSet[Cell], SortedSet[Cell])] = List(
+        this.find_singles_simple,
+        this.find_singles,
+        this.find_naked_pairs,
+        this.find_naked_triples,
+        this.find_naked_quads)
+
       var solved = SortedSet[Cell]()
       var removed = SortedSet[Cell]()
 
@@ -325,6 +335,62 @@ package Sudoku {
       } else {
         (result, SortedSet[Cell]())
       }
+    }
+
+    def find_naked_groups(limit: Int) : (SortedSet[Cell], SortedSet[Cell]) = {
+      val fun = (set: SortedSet[Cell]) => {
+        var found = SortedSet[Cell]()
+        val nums = set.map(cell => cell.value)
+        val usable = limit + 1
+
+        if (nums.size >= usable) {
+          val poss = set.map(cell => cell.pos)
+
+          if (poss.size >= usable) {
+            var cells = List[(Position, Set[Int])]()
+            for (pos <- poss) {
+              cells = (pos, set.filter(_.pos == pos).map(_.value)) :: cells
+
+            }
+            cells = cells.reverse
+
+            nums.toList.combinations(limit).foreach {
+              xs =>
+                var nxs = xs.toSet
+                val hits = cells.filter {
+                  case (pos, ys) => (nxs == ys) || (nums -- nxs).size == 0
+                }
+
+                if (hits.size == limit) {
+                  val hits2 = hits.map { case (pos, _nums) => pos }
+                  found = found ++ set.filter(
+                    cell => (nxs.contains(cell.value)
+                             && !hits2.contains(cell.pos)))
+                }
+            }
+          }
+        }
+        found
+      } : SortedSet[Cell]
+
+      val result = eliminator(fun)
+
+      if (result.size > 0) {
+        update_candidates(result)
+      }
+      (SortedSet[Cell](), result)
+    }
+
+    def find_naked_pairs () : (SortedSet[Cell], SortedSet[Cell]) = {
+      find_naked_groups(2)
+    }
+
+    def find_naked_triples () : (SortedSet[Cell], SortedSet[Cell]) = {
+      find_naked_groups(2)
+    }
+
+    def find_naked_quads () : (SortedSet[Cell], SortedSet[Cell]) = {
+      find_naked_groups(4)
     }
   }
 
