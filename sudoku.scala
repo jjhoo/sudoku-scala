@@ -28,6 +28,7 @@ package Sudoku {
     if (!(1 <= row && row <= 9) || !(1 <= column && column <= 9)) {
       throw new IllegalArgumentException("Invalid row/column")
     }
+
     val box: Int = {
       (((row - 1) / 3) * 3 + ((column - 1) / 3)) + 1
     }
@@ -171,6 +172,18 @@ package Sudoku {
       candidates.filter { cell => cell.pos.box == i }
     }
 
+    def get_solved_row(i: Integer) : SortedSet[Cell] = {
+      solved.filter { cell => cell.pos.row == i }
+    }
+
+    def get_solved_column(i: Integer) : SortedSet[Cell] = {
+      solved.filter { cell => cell.pos.column == i }
+    }
+
+    def get_solved_box(i: Integer) : SortedSet[Cell] = {
+      solved.filter { cell => cell.pos.box == i }
+    }
+
     def eliminator(f: SortedSet[Cell] => SortedSet[Cell]) : SortedSet[Cell] = {
       var found = SortedSet[Cell]()
 
@@ -276,8 +289,42 @@ package Sudoku {
         }
       }
     }
+
     def is_solved : Boolean = {
       candidates.size == 0
+    }
+
+    def is_valid : Boolean = {
+      val fun = (set: SortedSet[Cell]) => {
+        var nums = Set[Int]()
+        var result = false
+        var loop = new Breaks;
+
+        loop.breakable {
+          set.foreach {
+            cell =>
+              if (nums.contains(cell.value)) {
+                loop.break
+              } else {
+                nums += cell.value
+              }
+          }
+          result = true
+        }
+        result
+      } : Boolean
+
+      var result = false
+      var loop = new Breaks;
+      loop.breakable {
+        for (i <- 1 to 9) {
+          var tmp = (fun(get_solved_row(i)) && fun(get_solved_column(i))
+                     && fun(get_solved_box(i)))
+          if (!tmp) loop.break
+        }
+        result = true
+      }
+      result
     }
   }
 
@@ -318,6 +365,8 @@ package Sudoku {
       val gridmap = Solver.from_string(grid)
       val solver = new Solver(gridmap)
 
+      println(s"Grid is valid: ${solver.is_valid}")
+
       println(pos == other)
       println(pos == grid)
       println(solver.candidates.size)
@@ -330,6 +379,7 @@ package Sudoku {
       println(gridmap.filter { case (k, v) => v.value != 0})
 
       println(map2.keySet -- map1.keySet)
+      println(s"Grid is valid: ${solver.is_valid}")
     }
   }
 }
