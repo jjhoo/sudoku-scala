@@ -243,7 +243,10 @@ package Sudoku {
         this.find_singles,
         this.find_naked_pairs,
         this.find_naked_triples,
-        this.find_naked_quads)
+        this.find_naked_quads,
+        this.find_hidden_pairs,
+        this.find_hidden_triples,
+        this.find_hidden_quads)
 
       var solved = SortedSet[Cell]()
       var removed = SortedSet[Cell]()
@@ -391,6 +394,75 @@ package Sudoku {
 
     def find_naked_quads () : (SortedSet[Cell], SortedSet[Cell]) = {
       find_naked_groups(4)
+    }
+
+    def number_counts(numbers: List[Int], target: Int) : Set[(Int, Int)] = {
+      var result = List[(Int, Int)]()
+
+      for (a <- numbers) {
+        result = (a, numbers.filter(b => b == a).length) :: result
+      }
+      result = result.filter { case (_, n) => n == target }
+      result.toSet
+    }
+
+    def find_hidden_groups(limit: Int) : (SortedSet[Cell], SortedSet[Cell]) = {
+      val fun = (set: SortedSet[Cell]) => {
+        var found = SortedSet[Cell]()
+
+        val nums = set.map(_.value).toList.sorted
+        val ncts = number_counts(nums, limit)
+        val unums = ncts.map(_._2)
+        val usable = limit + 1
+
+        if (unums.size >= usable) {
+          val poss = set.map(cell => cell.pos)
+
+          if (poss.size >= usable) {
+            var cells = List[(Position, Set[Int])]()
+            for (pos <- poss) {
+              cells = (pos, set.filter(_.pos == pos).map(_.value)) :: cells
+
+            }
+            cells = cells.reverse
+
+            unums.toList.combinations(limit).foreach {
+              xs =>
+                var nxs = xs.toSet
+                val hits = cells.filter {
+                  case (pos, ys) => nxs.intersect(ys).size == limit
+                }
+
+                if (hits.size == limit) {
+                  val hits2 = hits.map { case (pos, _nums) => pos }
+                  found = found ++ set.filter(
+                    cell => (!nxs.contains(cell.value)
+                             && hits2.contains(cell.pos)))
+                }
+            }
+          }
+        }
+        found
+      } : SortedSet[Cell]
+
+      val result = eliminator(fun)
+
+      if (result.size > 0) {
+        update_candidates(result)
+      }
+      (SortedSet[Cell](), result)
+    }
+
+    def find_hidden_pairs () : (SortedSet[Cell], SortedSet[Cell]) = {
+      find_hidden_groups(2)
+    }
+
+    def find_hidden_triples () : (SortedSet[Cell], SortedSet[Cell]) = {
+      find_hidden_groups(2)
+    }
+
+    def find_hidden_quads () : (SortedSet[Cell], SortedSet[Cell]) = {
+      find_hidden_groups(4)
     }
   }
 
