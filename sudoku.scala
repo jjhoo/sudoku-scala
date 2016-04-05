@@ -184,6 +184,43 @@ package Sudoku {
       solved.filter { cell => cell.pos.box == i }
     }
 
+    def is_solved : Boolean = {
+      candidates.size == 0
+    }
+
+    def is_valid : Boolean = {
+      val fun = (set: SortedSet[Cell]) => {
+        var nums = Set[Int]()
+        var result = false
+        var loop = new Breaks;
+
+        loop.breakable {
+          set.foreach {
+            cell =>
+              if (nums.contains(cell.value)) {
+                loop.break
+              } else {
+                nums += cell.value
+              }
+          }
+          result = true
+        }
+        result
+      } : Boolean
+
+      var result = false
+      var loop = new Breaks;
+      loop.breakable {
+        for (i <- 1 to 9) {
+          var tmp = (fun(get_solved_row(i)) && fun(get_solved_column(i))
+                     && fun(get_solved_box(i)))
+          if (!tmp) loop.break
+        }
+        result = true
+      }
+      result
+    }
+
     def eliminator(f: SortedSet[Cell] => SortedSet[Cell]) : SortedSet[Cell] = {
       var found = SortedSet[Cell]()
 
@@ -194,6 +231,50 @@ package Sudoku {
       }
       println(found)
       found
+    }
+
+    def step : (SortedSet[Cell], SortedSet[Cell]) = {
+      val finders : List[() => (SortedSet[Cell], SortedSet[Cell])] = List(this.find_singles_simple)
+      var solved = SortedSet[Cell]()
+      var removed = SortedSet[Cell]()
+
+      var loop = new Breaks;
+
+      loop.breakable {
+        for (fun <- finders) {
+          val res = fun()
+
+          solved = res._1
+          removed = res._2
+          if (solved.size > 0 || removed.size > 0) {
+            loop.break
+          }
+        }
+      }
+      (solved, removed)
+    }
+
+    def solve {
+      var cont = true
+      var solved = SortedSet[Cell]()
+      var removed = SortedSet[Cell]()
+
+      while (cont) {
+        val res = step
+
+        solved = res._1
+        removed = res._2
+
+        if (is_solved) {
+          cont = false
+          println("solved")
+        }
+
+        if (solved.size == 0 && removed.size == 0) {
+          cont = false
+          println("no progress")
+        }
+      }
     }
 
     def find_singles_simple () : (SortedSet[Cell], SortedSet[Cell]) = {
@@ -244,87 +325,6 @@ package Sudoku {
       } else {
         (result, SortedSet[Cell]())
       }
-    }
-
-    def step : (SortedSet[Cell], SortedSet[Cell]) = {
-      val finders : List[() => (SortedSet[Cell], SortedSet[Cell])] = List(this.find_singles_simple)
-      var solved = SortedSet[Cell]()
-      var removed = SortedSet[Cell]()
-
-      var loop = new Breaks;
-
-      loop.breakable {
-        for (fun <- finders) {
-          val res = fun()
-
-          solved = res._1
-          removed = res._2
-          if (solved.size > 0 || removed.size > 0) {
-            loop.break
-          }
-        }
-      }
-      (solved, removed)
-    }
-
-    def solve {
-      var cont = true
-      var solved = SortedSet[Cell]()
-      var removed = SortedSet[Cell]()
-
-      while (cont) {
-        val res = step
-
-        solved = res._1
-        removed = res._2
-
-        if (is_solved) {
-          cont = false
-          println("solved")
-        }
-
-        if (solved.size == 0 && removed.size == 0) {
-          cont = false
-          println("no progress")
-        }
-      }
-    }
-
-    def is_solved : Boolean = {
-      candidates.size == 0
-    }
-
-    def is_valid : Boolean = {
-      val fun = (set: SortedSet[Cell]) => {
-        var nums = Set[Int]()
-        var result = false
-        var loop = new Breaks;
-
-        loop.breakable {
-          set.foreach {
-            cell =>
-              if (nums.contains(cell.value)) {
-                loop.break
-              } else {
-                nums += cell.value
-              }
-          }
-          result = true
-        }
-        result
-      } : Boolean
-
-      var result = false
-      var loop = new Breaks;
-      loop.breakable {
-        for (i <- 1 to 9) {
-          var tmp = (fun(get_solved_row(i)) && fun(get_solved_column(i))
-                     && fun(get_solved_box(i)))
-          if (!tmp) loop.break
-        }
-        result = true
-      }
-      result
     }
   }
 
