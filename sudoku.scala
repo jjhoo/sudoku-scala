@@ -306,7 +306,7 @@ package Sudoku {
     }
 
     def find_singles_simple () : (SortedSet[Cell], SortedSet[Cell]) = {
-      val fun = (set: SortedSet[Cell]) => {
+      def find(set: SortedSet[Cell]): SortedSet[Cell] = {
         var solved = SortedSet[Cell]()
         val poss  = set.map(_.pos)
 
@@ -318,9 +318,9 @@ package Sudoku {
             }
         }
         solved
-      } : SortedSet[Cell]
+      }
 
-      val result = eliminator(fun)
+      val result = eliminator(find)
 
       if (result.size > 0) {
         val removed = update_grid(result)
@@ -331,7 +331,7 @@ package Sudoku {
     }
 
     def find_singles () : (SortedSet[Cell], SortedSet[Cell]) = {
-      val fun = (set: SortedSet[Cell]) => {
+      def find(set: SortedSet[Cell]): SortedSet[Cell] = {
         var solved = SortedSet[Cell]()
         val nums = set.map(_.value)
 
@@ -343,9 +343,9 @@ package Sudoku {
             }
         }
         solved
-      } : SortedSet[Cell]
+      }
 
-      val result = eliminator(fun)
+      val result = eliminator(find)
 
       if (result.size > 0) {
         val removed = update_grid(result)
@@ -355,8 +355,8 @@ package Sudoku {
       }
     }
 
-    def find_naked_groups(limit: Int) : (SortedSet[Cell], SortedSet[Cell]) = {
-      val fun = (set: SortedSet[Cell]) => {
+    def find_naked_groups(limit: Int): (SortedSet[Cell], SortedSet[Cell]) = {
+      def find (set: SortedSet[Cell]): SortedSet[Cell] = {
         var found = SortedSet[Cell]()
         val nums = set.map(cell => cell.value)
         val usable = limit + 1
@@ -389,9 +389,9 @@ package Sudoku {
           }
         }
         found
-      } : SortedSet[Cell]
+      }
 
-      val result = eliminator(fun)
+      val result = eliminator(find)
 
       if (result.size > 0) {
         update_candidates(result)
@@ -426,7 +426,7 @@ package Sudoku {
     }
 
     def find_hidden_groups(limit: Int) : (SortedSet[Cell], SortedSet[Cell]) = {
-      val fun = (set: SortedSet[Cell]) => {
+      def find (set: SortedSet[Cell]): SortedSet[Cell] = {
         var found = SortedSet[Cell]()
 
         val nums = numbers(set)
@@ -462,9 +462,9 @@ package Sudoku {
           }
         }
         found
-      } : SortedSet[Cell]
+      }
 
-      val result = eliminator(fun)
+      val result = eliminator(find)
 
       if (result.size > 0) {
         update_candidates(result)
@@ -485,8 +485,8 @@ package Sudoku {
     }
 
     def find_pointing_pairs () : (SortedSet[Cell], SortedSet[Cell]) = {
-      val fun = (set: SortedSet[Cell],
-                 psamel: (Position, Position) => Boolean) => {
+      def find(set: SortedSet[Cell],
+               psamel: (Position, Position) => Boolean): SortedSet[Cell] = {
         var found = SortedSet[Cell]()
         val nums = set.map(_.value)
 
@@ -515,7 +515,7 @@ package Sudoku {
           }
         }
         found
-      } : SortedSet[Cell]
+      }
 
       var found = SortedSet[Cell]()
       for (i <- 1 to 9) {
@@ -523,7 +523,7 @@ package Sudoku {
         val fun2 = (a: Position, b: Position) => {
           a.row == b.row
         } : Boolean
-        found = found ++ fun(set, fun2)
+        found = found ++ find(set, fun2)
       }
 
       for (i <- 1 to 9) {
@@ -531,7 +531,7 @@ package Sudoku {
         val fun2 = (a: Position, b: Position) => {
           a.column == b.column
         } : Boolean
-        found = found ++ fun(set, fun2)
+        found = found ++ find(set, fun2)
       }
 
       if (found.size > 0) {
@@ -579,10 +579,10 @@ package Sudoku {
     }
 
     def find_xwings () : (SortedSet[Cell], SortedSet[Cell]) = {
-      val fun = (getset: Int => SortedSet[Cell],
-                 getotherset: Int => SortedSet[Cell],
-                 getpos: Position => Int,
-                 getotherpos: Position => Int) => {
+      def find(getset: Int => SortedSet[Cell],
+               getotherset: Int => SortedSet[Cell],
+               getpos: Position => Int,
+               getotherpos: Position => Int): SortedSet[Cell] = {
         var found = SortedSet[Cell]()
 
         for (i <- 1 to 8) {
@@ -635,12 +635,12 @@ package Sudoku {
       } : SortedSet[Cell]
 
       var found = SortedSet[Cell]()
-      found = found ++ fun(get_row, get_column,
-                           (pos: Position) => { pos.column } : Int,
-                           (pos: Position) => { pos.row } : Int)
-      found = found ++ fun(get_column, get_row,
-                           (pos: Position) => { pos.row } : Int,
-                           (pos: Position) => { pos.column } : Int)
+      found = found ++ find(get_row, get_column,
+                            (pos: Position) => { pos.column } : Int,
+                            (pos: Position) => { pos.row } : Int)
+      found = found ++ find(get_column, get_row,
+                            (pos: Position) => { pos.row } : Int,
+                            (pos: Position) => { pos.column } : Int)
       if (found.size > 0) {
         update_candidates(found)
       }
@@ -688,9 +688,9 @@ package Sudoku {
     }
 
     def find_boxline_reductions () : (SortedSet[Cell], SortedSet[Cell]) = {
-      val fun = (set: SortedSet[Cell], subset: SortedSet[Cell],
-                 pinbox: Position => Boolean,
-                 pinline: Position => Boolean)=> {
+      def find(set: SortedSet[Cell], subset: SortedSet[Cell],
+               pinbox: Position => Boolean,
+               pinline: Position => Boolean): SortedSet[Cell] = {
         var found = SortedSet[Cell]()
 
         val nums = numbers(subset)
@@ -709,7 +709,7 @@ package Sudoku {
           }
         }
         found
-      } : SortedSet[Cell]
+      }
 
       var found = SortedSet[Cell]()
       for (box <- 1 to 9) {
@@ -719,18 +719,18 @@ package Sudoku {
           val (ulc, lrc) = get_box_bounds(box)
 
           for (i <- ulc.row to lrc.row) {
-            val xs= fun(set, get_row(i),
-                        (pos: Position) => { pos.box == box } : Boolean,
-                        (pos: Position) => { pos.row == i } : Boolean)
+            val xs = find(set, get_row(i),
+                          (pos: Position) => { pos.box == box } : Boolean,
+                          (pos: Position) => { pos.row == i } : Boolean)
             if (xs.size > 0) {
               found = found ++ xs
             }
           }
 
           for (i <- ulc.column to lrc.column) {
-            val xs = fun(set, get_column(i),
-                         (pos: Position) => { pos.box == box } : Boolean,
-                         (pos: Position) => { pos.column == i } : Boolean)
+            val xs = find(set, get_column(i),
+                          (pos: Position) => { pos.box == box } : Boolean,
+                          (pos: Position) => { pos.column == i } : Boolean)
             if (xs.size > 0) {
               found = found ++ xs
             }
