@@ -249,7 +249,8 @@ package Sudoku {
         this.find_hidden_quads,
         this.find_pointing_pairs,
         this.find_xwings,
-        this.find_ywings)
+        this.find_ywings,
+        this.find_xyzwings)
 
       var solved = SortedSet[Cell]()
       var removed = SortedSet[Cell]()
@@ -636,6 +637,46 @@ package Sudoku {
       }
       (SortedSet[Cell](), found)
     }
+
+    def find_xyzwings () : (SortedSet[Cell], SortedSet[Cell]) = {
+      var found = SortedSet[Cell]()
+
+      val coords = candidates.map(_.pos)
+      var cells = List[(Position, Set[Int])]()
+
+      for (pos <- coords) {
+        val xs = candidates.filter(_.pos == pos).toList
+        if (xs.size == 2 || xs.size == 3) {
+          cells = (xs(0).pos, xs.map(_.value).toSet) :: cells
+        }
+      }
+      cells = cells.reverse
+
+      for ((a, anums) <- cells) {
+        if (anums.size == 2) {
+          for ((b, bnums) <- cells) {
+            if (bnums.size == 2 && a != b && !(a.row < b.row)) {
+              for ((w, wnums) <- cells) {
+                if (a != w && b != w && wnums.size == 3 && w.sees(a) && w.sees(b) && wnums == (anums ++ bnums)) {
+                  val z = anums.intersect(bnums).toList(0)
+
+                  found = found ++  candidates.filter {
+                    cell =>
+                      (cell.value == z && a.sees(cell.pos)
+                       && b.sees(cell.pos) && w.sees(cell.pos))
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (found.size > 0) {
+        update_candidates(found)
+      }
+      (SortedSet[Cell](), found)
+    }
   }
 
   object Solver {
@@ -674,9 +715,11 @@ package Sudoku {
       // val grid = "500069000820070000001002005000700950060000080035008000700800200000040067000390004"
       // val grid = "200068050008002000560004801000000530400000002097000000804300096000800300030490007"
       // x-wing
-      val grid = "000030802020600040009504060090000200780000034006000070050401300060007010102080000"
+      // val grid = "000030802020600040009504060090000200780000034006000070050401300060007010102080000"
       // xyz-wing
-      // val grid = "100002000050090204000006700034001005500908007800400320009600000306010040000700009"
+      val grid = "100002000050090204000006700034001005500908007800400320009600000306010040000700009"
+      // boxline
+      // val grid = "200068050008002000560004801000000530400000002097000000804300096000800300030490007"
       // val grid = "610320000300400000058600000009503620000040000023801500000006750000004003000058014"
 
       val gridmap = Solver.from_string(grid)
