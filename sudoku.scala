@@ -96,6 +96,12 @@ package Sudoku {
     var solved = SortedSet[Cell]()
     var unsolved = SortedSet[Cell]()
 
+    val boxes = List[Int](1, 4, 7) . map {
+      i => List[Int](1, 4, 7) . map {
+        j => (new Position(i, j), new Position(i + 2, j + 2))
+      }
+    } . flatten
+
     def init_solved {
       solved = SortedSet[Cell]()
       for ((pos, cell) <- grid) {
@@ -164,28 +170,32 @@ package Sudoku {
       removed
     }
 
-    def get_row(i: Integer) : SortedSet[Cell] = {
+    def get_row(i: Int) : SortedSet[Cell] = {
       candidates.filter { cell => cell.pos.row == i }
     }
 
-    def get_column(i: Integer) : SortedSet[Cell] = {
+    def get_column(i: Int) : SortedSet[Cell] = {
       candidates.filter { cell => cell.pos.column == i }
     }
 
-    def get_box(i: Integer) : SortedSet[Cell] = {
+    def get_box(i: Int) : SortedSet[Cell] = {
       candidates.filter { cell => cell.pos.box == i }
     }
 
-    def get_solved_row(i: Integer) : SortedSet[Cell] = {
+    def get_solved_row(i: Int) : SortedSet[Cell] = {
       solved.filter { cell => cell.pos.row == i }
     }
 
-    def get_solved_column(i: Integer) : SortedSet[Cell] = {
+    def get_solved_column(i: Int) : SortedSet[Cell] = {
       solved.filter { cell => cell.pos.column == i }
     }
 
-    def get_solved_box(i: Integer) : SortedSet[Cell] = {
+    def get_solved_box(i: Int) : SortedSet[Cell] = {
       solved.filter { cell => cell.pos.box == i }
+    }
+
+    def get_box_bounds(box: Int) : (Position, Position) = {
+      boxes(box - 1)
     }
 
     def is_solved : Boolean = {
@@ -248,6 +258,7 @@ package Sudoku {
         this.find_hidden_triples,
         this.find_hidden_quads,
         this.find_pointing_pairs,
+        this.find_boxline_reductions,
         this.find_xwings,
         this.find_ywings,
         this.find_xyzwings)
@@ -624,12 +635,10 @@ package Sudoku {
       } : SortedSet[Cell]
 
       var found = SortedSet[Cell]()
-      val fun1 = (row: Int) => { get_row(row) } : SortedSet[Sudoku.Cell]
-      val fun2 = (col: Int) => { get_column(col) } : SortedSet[Sudoku.Cell]
-      found = found ++ fun(fun1, fun2,
+      found = found ++ fun(get_row, get_column,
                            (pos: Position) => { pos.column } : Int,
                            (pos: Position) => { pos.row } : Int)
-      found = found ++ fun(fun2, fun1,
+      found = found ++ fun(get_column, get_row,
                            (pos: Position) => { pos.row } : Int,
                            (pos: Position) => { pos.column } : Int)
       if (found.size > 0) {
@@ -667,6 +676,63 @@ package Sudoku {
                   }
                 }
               }
+            }
+          }
+        }
+      }
+
+      if (found.size > 0) {
+        update_candidates(found)
+      }
+      (SortedSet[Cell](), found)
+    }
+
+    def find_boxline_reductions () : (SortedSet[Cell], SortedSet[Cell]) = {
+      val fun = (set: SortedSet[Cell], subset: SortedSet[Cell],
+                 pinbox: Position => Boolean,
+                 pinline: Position => Boolean)=> {
+        var found = SortedSet[Cell]()
+
+        val nums = numbers(subset)
+        val foos = number_counts(nums, 2)
+
+        if (foos.size != 2) {
+          for ((x, _) <- foos) {
+            val cells = subset.filter {
+              cell => cell.value == x && pinbox(cell.pos)
+            }
+            if (cells.size == 2) {
+              found = found ++ set.filter {
+                cell => cell.value == x && !pinline(cell.pos)
+              }
+            }
+          }
+        }
+        found
+      } : SortedSet[Cell]
+
+      var found = SortedSet[Cell]()
+      for (box <- 1 to 9) {
+        val set = get_box(box)
+
+        if (set.size > 2) {
+          val (ulc, lrc) = get_box_bounds(box)
+
+          for (i <- ulc.row to lrc.row) {
+            val xs= fun(set, get_row(i),
+                        (pos: Position) => { pos.box == box } : Boolean,
+                        (pos: Position) => { pos.row == i } : Boolean)
+            if (xs.size > 0) {
+              found = found ++ xs
+            }
+          }
+
+          for (i <- ulc.column to lrc.column) {
+            val xs = fun(set, get_column(i),
+                         (pos: Position) => { pos.box == box } : Boolean,
+                         (pos: Position) => { pos.column == i } : Boolean)
+            if (xs.size > 0) {
+              found = found ++ xs
             }
           }
         }
@@ -717,9 +783,9 @@ package Sudoku {
       // x-wing
       // val grid = "000030802020600040009504060090000200780000034006000070050401300060007010102080000"
       // xyz-wing
-      val grid = "100002000050090204000006700034001005500908007800400320009600000306010040000700009"
+      // val grid = "100002000050090204000006700034001005500908007800400320009600000306010040000700009"
       // boxline
-      // val grid = "200068050008002000560004801000000530400000002097000000804300096000800300030490007"
+      val grid = "200068050008002000560004801000000530400000002097000000804300096000800300030490007"
       // val grid = "610320000300400000058600000009503620000040000023801500000006750000004003000058014"
 
       val gridmap = Solver.from_string(grid)
