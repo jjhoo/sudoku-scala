@@ -18,7 +18,6 @@ import scala.math.Ordered.orderingToOrdered
 
 import scala.collection.mutable.HashMap
 import scala.collection.immutable.{Set, SortedSet}
-import scala.util.control.Breaks
 
 package Sudoku {
   case class CellError(name: String)
@@ -205,33 +204,31 @@ package Sudoku {
     def is_valid : Boolean = {
       val fun = (set: SortedSet[Cell]) => {
         var nums = Set[Int]()
-        var result = false
-        var loop = new Breaks;
+        var exists = false
 
-        loop.breakable {
-          set.foreach {
-            cell =>
-              if (nums.contains(cell.value)) {
-                loop.break
-              } else {
-                nums += cell.value
-              }
-          }
-          result = true
+        if (set.size > 0) {
+          val it = set.iterator
+          do {
+            val cell = it.next
+            exists = nums.contains(cell.value)
+            nums += cell.value
+          } while (it.hasNext && !exists)
+          !exists
+        } else {
+          true
         }
-        result
       } : Boolean
 
-      var result = false
-      var loop = new Breaks;
-      loop.breakable {
-        for (i <- 1 to 9) {
-          var tmp = (fun(get_solved_row(i)) && fun(get_solved_column(i))
-                     && fun(get_solved_box(i)))
-          if (!tmp) loop.break
-        }
-        result = true
-      }
+      var result = true
+      var i = 1
+
+      do {
+        val tmp = (fun(get_solved_row(i)) && fun(get_solved_column(i))
+                   && fun(get_solved_box(i)))
+        if (!tmp) result = false
+
+        i += 1
+      } while (i <= 9 && result)
       result
     }
 
@@ -265,20 +262,14 @@ package Sudoku {
 
       var solved = SortedSet[Cell]()
       var removed = SortedSet[Cell]()
+      val it = finders.iterator
 
-      var loop = new Breaks;
-
-      loop.breakable {
-        for (fun <- finders) {
-          val res = fun()
-
-          solved = res._1
-          removed = res._2
-          if (solved.size > 0 || removed.size > 0) {
-            loop.break
-          }
-        }
-      }
+      do {
+        val fun = it.next
+        val res = fun()
+        solved = res._1
+        removed = res._2
+      } while (it.hasNext && solved.size == 0 && removed.size == 0)
       (solved, removed)
     }
 
