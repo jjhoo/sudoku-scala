@@ -96,11 +96,11 @@ package Sudoku {
     var solved = SortedSet[Cell]()
     var unsolved = SortedSet[Cell]()
 
-    val boxes = List[Int](1, 4, 7) . map {
+    val boxes = List[Int](1, 4, 7) . flatMap {
       i => List[Int](1, 4, 7) . map {
         j => (new Position(i, j), new Position(i + 2, j + 2))
       }
-    } . flatten
+    }
 
     def init_solved {
       solved = SortedSet[Cell]()
