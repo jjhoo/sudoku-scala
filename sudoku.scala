@@ -240,7 +240,7 @@ package Sudoku {
         found = found ++ f(get_column(i))
         found = found ++ f(get_box(i))
       }
-      println(found)
+      // println(found)
       found
     }
 
@@ -277,6 +277,11 @@ package Sudoku {
       var cont = true
       var solved = SortedSet[Cell]()
       var removed = SortedSet[Cell]()
+
+      if (!is_valid) {
+        cont = false
+        println("invalid grid")
+      }
 
       while (cont) {
         val res = step
