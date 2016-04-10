@@ -1,11 +1,19 @@
 sudo: required
 dist: trusty
 language: scala
+
 scala:
   - "2.11.6"
 jdk:
   - oraclejdk7
+
 before_install:
+ - sudo apt-get install -y junit4
  - wget http://www.scala-lang.org/files/archive/scala-2.11.6.deb
  - sudo dpkg -i scala-2.11.6.deb
+ - sudo ln -s scala-xml_2.11-1.0.3.jar /usr/share/scala/lib/scala-xml.jar
+
+env:
+ - CLASSPATH=/usr/share/scala/lib/scala-library.jar:/usr/share/scala/lib/scala-reflect.jar:/usr/share/scala/lib/scala-xml.jar:/usr/share/scala/lib/scala-compiler.jar:$HOME/sudoku-scala/lib/jacocoant.jar:$HOME/sudoku-scala/lib/jacocoagent.jar
+
 install: ./bootstrap.sh
