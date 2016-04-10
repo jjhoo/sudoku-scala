@@ -1,0 +1,6 @@
+<ivy-module version="2.4">
+  <info organisation="test" module="Sudoku" />
+  <dependencies>
+    <dependency org="org.scalatest" name="scalatest_2.11" rev="2.2.6" transitive="false" />
+  </dependencies>
+</ivy-module>

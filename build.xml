@@ -1,0 +1,107 @@
+<?xm5Al version="1.0" encoding="UTF-8"?>
+
+<project name="Sudoku" default="rebuild" xmlns:jacoco="antlib:org.jacoco.ant"
+         xmlns:ivy="antlib:org.apache.ivy.ant">
+    <description>
+      Ant build file for a Sudoku solver.
+    </description>
+
+    <property name="src.dir" location="." />
+    <property name="result.dir" location="./target" />
+    <property name="result.classes.dir" location="${result.dir}/classes" />
+    <property name="result.report.dir" location="${result.dir}/site/jacoco" />
+    <property name="result.exec.file" location="${result.dir}/jacoco.exec" />
+
+    <target name="bootstrap" description="Install ivy">
+      <mkdir dir="${user.home}/.ant/lib"/>
+      <get dest="${user.home}/.ant/lib/ivy.jar"
+           src="http://search.maven.org/remotecontent?filepath=org/apache/ivy/ivy/2.4.0/ivy-2.4.0.jar"/>
+      <get dest="${src.dir}/lib/jacoco.zip"
+           src="http://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.7.6.201602180812/jacoco-0.7.6.201602180812.zip"/>
+    </target>
+
+    <target name="resolve" description="Use ivy to resolve classpaths">
+      <ivy:retrieve />
+    </target>
+
+    <target name="clean">
+      <delete dir="${result.dir}" />
+    </target>
+
+    <target name="clean-all" depends="clean" description="Purge ivy cache">
+      <ivy:cleancache/>
+    </target>
+
+    <target name="init" depends="resolve">
+      <property name="scala-library.jar" value="/usr/share/java/scala-library.jar"/>
+      <path id="build.classpath">
+        <pathelement location="${scala-library.jar}" />
+        <pathelement location="/usr/share/java/junit4.jar" />
+        <pathelement location="./lib/scalatest_2.11-2.2.6.jar" />
+        <pathelement location="${result.dir}" />
+      </path>
+
+      <path id="test.classpath">
+        <pathelement location="${scala-library.jar}" />
+        <pathelement location="/usr/share/java/junit4.jar" />
+        <pathelement location="/usr/share/java/scala-xml_2.11.jar" />
+        <pathelement location="./lib/scalatest_2.11-2.2.6.jar" />
+        <pathelement location="./lib/jacocoagent.jar" />
+        <pathelement location="${result.classes.dir}" />
+      </path>
+
+      <path id="report.classpath">
+        <pathelement location="./lib/jacocoant.jar" />
+        <pathelement location="${result.classes.dir}" />
+      </path>
+
+      <taskdef resource="scala/tools/ant/antlib.xml">
+        <classpath path="/usr/share/java/scala-compiler.jar"/>
+      </taskdef>
+
+      <taskdef uri="jacoco" resource="org/jacoco/ant/antlib.xml">
+        <classpath path="./lib/jacocoant.jar"/>
+      </taskdef>
+    </target>
+
+    <target name="compile" depends="init">
+      <mkdir dir="${result.classes.dir}" />
+      <scalac srcdir="${src.dir}" destdir="${result.classes.dir}" classpathref="build.classpath">
+        <include name="*.scala"/>
+      </scalac>
+    </target>
+
+    <target name="test" depends="compile">
+      <jacoco:coverage destfile="${result.exec.file}">
+        <java classname="org.scalatest.run" fork="true" classpathref="test.classpath">
+          <arg value="Sudoku.Test"/>
+        </java>
+      </jacoco:coverage>
+    </target>
+
+    <target name="report" depends="test">
+      <jacoco:report>
+        <executiondata>
+          <file file="${result.exec.file}" />
+        </executiondata>
+
+        <structure name="Sudoku coverage">
+          <classfiles>
+            <fileset dir="${result.classes.dir}">
+              <exclude name="**/*Test*.class"/>
+            </fileset>
+          </classfiles>
+          <sourcefiles encoding="UTF-8">
+            <fileset dir="${src.dir}" />
+          </sourcefiles>
+        </structure>
+
+        <!-- to produce reports in different formats. -->
+        <html destdir="${result.report.dir}" />
+        <csv destfile="${result.report.dir}/report.csv" />
+        <xml destfile="${result.report.dir}/report.xml" />
+      </jacoco:report>
+    </target>
+
+    <target name="rebuild" depends="clean,compile,test,report" />
+</project>
