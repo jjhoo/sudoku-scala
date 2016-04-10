@@ -1,6 +1,11 @@
+sudo: required
+dist: trusty
 language: scala
 scala:
   - "2.11.6"
 jdk:
   - oraclejdk7
+before_install:
+ - wget http://www.scala-lang.org/files/archive/scala-2.11.6.deb
+ - sudo dpkg -i scala-2.11.6.deb
 install: ./bootstrap.sh
