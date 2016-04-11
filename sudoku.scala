@@ -250,9 +250,9 @@ package Sudoku {
         this.find_singles,
         this.find_naked_pairs,
         this.find_naked_triples,
-        this.find_naked_quads,
         this.find_hidden_pairs,
         this.find_hidden_triples,
+        this.find_naked_quads,
         this.find_hidden_quads,
         this.find_pointing_pairs,
         this.find_boxline_reductions,
@@ -400,7 +400,7 @@ package Sudoku {
     }
 
     def find_naked_triples () : (SortedSet[Cell], SortedSet[Cell]) = {
-      find_naked_groups(2)
+      find_naked_groups(3)
     }
 
     def find_naked_quads () : (SortedSet[Cell], SortedSet[Cell]) = {
@@ -413,11 +413,23 @@ package Sudoku {
 
     def number_counts(numbers: List[Int], target: Int) : Set[(Int, Int)] = {
       var result = List[(Int, Int)]()
+      val unums = numbers.toSet
 
-      for (a <- numbers) {
+      for (a <- unums) {
         result = (a, numbers.filter(b => b == a).length) :: result
       }
       result = result.filter { case (_, n) => n == target }
+      result.toSet
+    }
+
+    def number_counts_le(numbers: List[Int], target: Int) : Set[(Int, Int)] = {
+      var result = List[(Int, Int)]()
+      val unums = numbers.toSet
+
+      for (a <- unums) {
+        result = (a, numbers.filter(b => b == a).length) :: result
+      }
+      result = result.filter { case (_, n) => n <= target }
       result.toSet
     }
 
@@ -426,34 +438,35 @@ package Sudoku {
         var found = SortedSet[Cell]()
 
         val nums = numbers(set)
-        val ncts = number_counts(nums, limit)
-        val unums = ncts.map(_._2)
+        val ncts = number_counts_le(nums, limit)
+        val unums = ncts.map(_._1)
         val usable = limit + 1
 
-        if (unums.size >= usable) {
+        if (unums.size >= limit) {
           val poss = set.map(cell => cell.pos)
+          val nset = set.toList
 
           if (poss.size >= usable) {
-            var cells = List[(Position, Set[Int])]()
-            for (pos <- poss) {
-              cells = (pos, set.filter(_.pos == pos).map(_.value)) :: cells
-
-            }
-            cells = cells.reverse
-
             unums.toList.combinations(limit).foreach {
-              xs =>
-                var nxs = xs.toSet
-                val hits = cells.filter {
-                  case (pos, ys) => nxs.intersect(ys).size == limit
+              xs => {
+                // need to have the numbers in exactly 'limit' cells
+                val tmp = xs.map {
+                  x => (x, nset.filter { cell => cell.value == x } . map {
+                    cell => cell.pos
+                  })
+                } . filter {
+                  case (n, poss) => 2 <= poss.length && poss.length <= limit
                 }
 
-                if (hits.size == limit) {
-                  val hits2 = hits.map { case (pos, _nums) => pos }
-                  found = found ++ set.filter(
-                    cell => (!nxs.contains(cell.value)
-                             && hits2.contains(cell.pos)))
+                val nposs = tmp.flatMap(_._2).toSet
+
+                if (tmp.length == limit && nposs.size == limit) {
+                  found = found ++ set.filter {
+                    cell => (nposs.contains(cell.pos)
+                             && !xs.contains(cell.value))
+                  }
                 }
+              }
             }
           }
         }
@@ -473,7 +486,7 @@ package Sudoku {
     }
 
     def find_hidden_triples () : (SortedSet[Cell], SortedSet[Cell]) = {
-      find_hidden_groups(2)
+      find_hidden_groups(3)
     }
 
     def find_hidden_quads () : (SortedSet[Cell], SortedSet[Cell]) = {
@@ -781,8 +794,9 @@ package Sudoku {
       // xyz-wing
       // val grid = "100002000050090204000006700034001005500908007800400320009600000306010040000700009"
       // boxline
-      val grid = "200068050008002000560004801000000530400000002097000000804300096000800300030490007"
+      // val grid = "200068050008002000560004801000000530400000002097000000804300096000800300030490007"
       // val grid = "610320000300400000058600000009503620000040000023801500000006750000004003000058014"
+      val grid = "300000000970010000600583000200000900500621003008000005000435002000090056000000001"
 
       val gridmap = Solver.from_string(grid)
       val solver = new Solver(gridmap)
