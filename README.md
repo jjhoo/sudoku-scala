@@ -1,4 +1,4 @@
-This is sort of translation of a [Haskell version](https://github.com/jjhoo/hs-sudoku) and done while learning Scala.
+This is sort of translation of a [Haskell version](https://github.com/jjhoo/hs-sudoku) / [Ruby version](https://github.com/jjhoo/sudoku.rb) and done while learning Scala.
 
 Work in progress.
 
