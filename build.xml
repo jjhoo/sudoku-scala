@@ -9,6 +9,7 @@
     <property name="src.dir" location="." />
     <property name="result.dir" location="./target" />
     <property name="result.classes.dir" location="${result.dir}/classes" />
+    <property name="test.classes.dir" location="${result.dir}/test" />
     <property name="result.report.dir" location="${result.dir}/site/jacoco" />
     <property name="result.exec.file" location="${result.dir}/jacoco.exec" />
 
@@ -49,6 +50,7 @@
         <pathelement location="./lib/scalatest_2.11-2.2.6.jar" />
         <pathelement location="./lib/jacocoagent.jar" />
         <pathelement location="${result.classes.dir}" />
+	    <pathelement location="${test.classes.dir}" />
       </path>
 
       <path id="report.classpath">
@@ -67,12 +69,19 @@
 
     <target name="compile" depends="init">
       <mkdir dir="${result.classes.dir}" />
-      <scalac srcdir="${src.dir}" destdir="${result.classes.dir}" classpathref="build.classpath">
+      <scalac srcdir="${src.dir}/src" destdir="${result.classes.dir}" classpathref="build.classpath">
         <include name="*.scala"/>
       </scalac>
     </target>
 
-    <target name="test" depends="compile">
+    <target name="compile_test" depends="compile">
+      <mkdir dir="${test.classes.dir}" />
+      <scalac srcdir="${src.dir}/test" destdir="${test.classes.dir}" classpathref="test.classpath">
+        <include name="*.scala"/>
+      </scalac>
+    </target>
+
+    <target name="test" depends="compile_test">
       <jacoco:coverage destfile="${result.exec.file}">
         <java classname="org.scalatest.run" fork="true" classpathref="test.classpath">
           <arg value="Sudoku.Test"/>
