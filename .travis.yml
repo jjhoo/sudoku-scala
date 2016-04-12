@@ -5,8 +5,8 @@ scala:
 jdk:
   - oraclejdk7
 before_install:
-  - pip install --user codecov
+  - pip install --quiet --user codecov
 script:
-  - sbt ++2.11.6 clean coverage test
+  - sbt ++2.11.6 clean coverage test coverageReport
 after_success:
   - codecov
