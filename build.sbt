@@ -3,7 +3,7 @@ import Dependencies._
 organization := "asdf"
 name := "Sudoku"
 version := "0.0.1"
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.8"
 coverageEnabled := true
 
 libraryDependencies ++= List(

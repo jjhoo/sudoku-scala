@@ -20,8 +20,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.immutable.{Set, SortedSet}
 
 package Sudoku {
-  case class CellError(name: String)
-       extends Exception(s"No such cell: $name")
+  case class CellError(name: String) extends Exception(s"No such cell: $name")
 
   class Position(val row: Int, val column: Int) extends Ordered[Position] {
     if (!(1 <= row && row <= 9) || !(1 <= column && column <= 9)) {
@@ -32,15 +31,15 @@ package Sudoku {
       (((row - 1) / 3) * 3 + ((column - 1) / 3)) + 1
     }
 
-    def is_same_row(other: Position) : Boolean = {
+    def is_same_row(other: Position): Boolean = {
       this.row == other.row
     }
 
-    def is_same_column(other: Position) : Boolean = {
+    def is_same_column(other: Position): Boolean = {
       this.column == other.column
     }
 
-    def is_same_box(other: Position) : Boolean = {
+    def is_same_box(other: Position): Boolean = {
       this.box == other.box
     }
 
@@ -48,26 +47,26 @@ package Sudoku {
       this.row == other.row && this.column == other.column
     }
 
-    override def equals(other: Any) : Boolean =
+    override def equals(other: Any): Boolean =
       other match {
         case other: Position => eq(other)
-        case _ => false
+        case _               => false
       }
 
-    def sees(other: Position) : Boolean = {
+    def sees(other: Position): Boolean = {
       !eq(other) && (is_same_row(other) || is_same_column(other)
-                     || is_same_box(other))
+      || is_same_box(other))
     }
 
-    override def hashCode : Int = {
+    override def hashCode: Int = {
       9 * (row - 1) + (column - 1)
     }
 
-    override def toString : String = {
+    override def toString: String = {
       s"($row, $column)"
     }
 
-    override def compare(other: Position) : Int = {
+    override def compare(other: Position): Int = {
       (this.row, this.column) compare (other.row, other.column)
     }
   }
@@ -77,15 +76,15 @@ package Sudoku {
       throw new IllegalArgumentException("Invalid value")
     }
 
-    def is_solved : Boolean = {
+    def is_solved: Boolean = {
       value > 0
     }
 
-    override def toString : String = {
+    override def toString: String = {
       s"(${pos.row}, ${pos.column}, $value)"
     }
 
-    override def compare(other: Cell) : Int = {
+    override def compare(other: Cell): Int = {
       (this.pos, this.value) compare (other.pos, other.value)
     }
   }
@@ -95,9 +94,9 @@ package Sudoku {
     var solved = SortedSet[Cell]()
     var unsolved = SortedSet[Cell]()
 
-    val boxes = List[Int](1, 4, 7) . flatMap {
-      i => List[Int](1, 4, 7) . map {
-        j => (new Position(i, j), new Position(i + 2, j + 2))
+    val boxes = List[Int](1, 4, 7).flatMap { i =>
+      List[Int](1, 4, 7).map { j =>
+        (new Position(i, j), new Position(i + 2, j + 2))
       }
     }
 
@@ -123,19 +122,18 @@ package Sudoku {
     def init_candidates {
       candidates = SortedSet[Cell]()
 
-      unsolved.foreach {
-        cell =>
-          for (i <- 1 to 9) {
-            candidates += new Cell(cell.pos, i)
-          }
+      unsolved.foreach { cell =>
+        for (i <- 1 to 9) {
+          candidates += new Cell(cell.pos, i)
+        }
       }
     }
 
-    def update_cell(cell: Cell) : SortedSet[Cell] = {
-      val removed : SortedSet[Cell] = candidates.filter(
+    def update_cell(cell: Cell): SortedSet[Cell] = {
+      val removed: SortedSet[Cell] = candidates.filter(
         cell2 =>
           cell2.pos == cell.pos ||
-        (cell2.value == cell.value && cell2.pos.sees(cell.pos)))
+            (cell2.value == cell.value && cell2.pos.sees(cell.pos)))
       candidates = candidates -- removed
       removed
     }
@@ -143,17 +141,19 @@ package Sudoku {
     init_unsolved
     init_solved
     init_candidates
-    solved.foreach { cell => update_cell(cell) }
+    solved.foreach { cell =>
+      update_cell(cell)
+    }
 
     def update_candidates(found: SortedSet[Cell]) {
       candidates = candidates -- found
     }
 
-    def update_grid(found: SortedSet[Cell]) : SortedSet[Cell] = {
+    def update_grid(found: SortedSet[Cell]): SortedSet[Cell] = {
       var removed = SortedSet[Cell]()
 
-      found.foreach {
-        x => {
+      found.foreach { x =>
+        {
           var opt = grid.get(x.pos)
           opt match {
             case Some(cell) => {
@@ -169,39 +169,51 @@ package Sudoku {
       removed
     }
 
-    def get_row(i: Int) : SortedSet[Cell] = {
-      candidates.filter { cell => cell.pos.row == i }
+    def get_row(i: Int): SortedSet[Cell] = {
+      candidates.filter { cell =>
+        cell.pos.row == i
+      }
     }
 
-    def get_column(i: Int) : SortedSet[Cell] = {
-      candidates.filter { cell => cell.pos.column == i }
+    def get_column(i: Int): SortedSet[Cell] = {
+      candidates.filter { cell =>
+        cell.pos.column == i
+      }
     }
 
-    def get_box(i: Int) : SortedSet[Cell] = {
-      candidates.filter { cell => cell.pos.box == i }
+    def get_box(i: Int): SortedSet[Cell] = {
+      candidates.filter { cell =>
+        cell.pos.box == i
+      }
     }
 
-    def get_solved_row(i: Int) : SortedSet[Cell] = {
-      solved.filter { cell => cell.pos.row == i }
+    def get_solved_row(i: Int): SortedSet[Cell] = {
+      solved.filter { cell =>
+        cell.pos.row == i
+      }
     }
 
-    def get_solved_column(i: Int) : SortedSet[Cell] = {
-      solved.filter { cell => cell.pos.column == i }
+    def get_solved_column(i: Int): SortedSet[Cell] = {
+      solved.filter { cell =>
+        cell.pos.column == i
+      }
     }
 
-    def get_solved_box(i: Int) : SortedSet[Cell] = {
-      solved.filter { cell => cell.pos.box == i }
+    def get_solved_box(i: Int): SortedSet[Cell] = {
+      solved.filter { cell =>
+        cell.pos.box == i
+      }
     }
 
-    def get_box_bounds(box: Int) : (Position, Position) = {
+    def get_box_bounds(box: Int): (Position, Position) = {
       boxes(box - 1)
     }
 
-    def is_solved : Boolean = {
+    def is_solved: Boolean = {
       candidates.size == 0
     }
 
-    def is_valid : Boolean = {
+    def is_valid: Boolean = {
       val fun = (set: SortedSet[Cell]) => {
         var nums = Set[Int]()
         var exists = false
@@ -217,14 +229,14 @@ package Sudoku {
         } else {
           true
         }
-      } : Boolean
+      }: Boolean
 
       var result = true
       var i = 1
 
       do {
         val tmp = (fun(get_solved_row(i)) && fun(get_solved_column(i))
-                   && fun(get_solved_box(i)))
+          && fun(get_solved_box(i)))
         if (!tmp) result = false
 
         i += 1
@@ -232,7 +244,7 @@ package Sudoku {
       result
     }
 
-    def eliminator(f: SortedSet[Cell] => SortedSet[Cell]) : SortedSet[Cell] = {
+    def eliminator(f: SortedSet[Cell] => SortedSet[Cell]): SortedSet[Cell] = {
       var found = SortedSet[Cell]()
 
       for (i <- 1 to 9) {
@@ -244,8 +256,8 @@ package Sudoku {
       found
     }
 
-    def step : (SortedSet[Cell], SortedSet[Cell]) = {
-      val finders : List[() => (SortedSet[Cell], SortedSet[Cell])] = List(
+    def step: (SortedSet[Cell], SortedSet[Cell]) = {
+      val finders: List[() => (SortedSet[Cell], SortedSet[Cell])] = List(
         this.find_singles_simple,
         this.find_singles,
         this.find_naked_pairs,
@@ -258,7 +270,8 @@ package Sudoku {
         this.find_boxline_reductions,
         this.find_xwings,
         this.find_ywings,
-        this.find_xyzwings)
+        this.find_xyzwings
+      )
 
       var solved = SortedSet[Cell]()
       var removed = SortedSet[Cell]()
@@ -301,17 +314,18 @@ package Sudoku {
       }
     }
 
-    def find_singles_simple () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_singles_simple(): (SortedSet[Cell], SortedSet[Cell]) = {
       def find(set: SortedSet[Cell]): SortedSet[Cell] = {
         var solved = SortedSet[Cell]()
-        val poss  = set.map(_.pos)
+        val poss = set.map(_.pos)
 
-        poss.foreach {
-          pos =>
-            val xs = set.filter { x => x.pos == pos }
-            if (xs.size == 1) {
-              solved += xs.firstKey
-            }
+        poss.foreach { pos =>
+          val xs = set.filter { x =>
+            x.pos == pos
+          }
+          if (xs.size == 1) {
+            solved += xs.firstKey
+          }
         }
         solved
       }
@@ -326,17 +340,18 @@ package Sudoku {
       }
     }
 
-    def find_singles () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_singles(): (SortedSet[Cell], SortedSet[Cell]) = {
       def find(set: SortedSet[Cell]): SortedSet[Cell] = {
         var solved = SortedSet[Cell]()
         val nums = set.map(_.value)
 
-        nums.foreach {
-          num =>
-            val nset = set.filter { cell => cell.value == num }
-            if (nset.size == 1) {
-              solved += nset.firstKey
-            }
+        nums.foreach { num =>
+          val nset = set.filter { cell =>
+            cell.value == num
+          }
+          if (nset.size == 1) {
+            solved += nset.firstKey
+          }
         }
         solved
       }
@@ -352,7 +367,7 @@ package Sudoku {
     }
 
     def find_naked_groups(limit: Int): (SortedSet[Cell], SortedSet[Cell]) = {
-      def find (set: SortedSet[Cell]): SortedSet[Cell] = {
+      def find(set: SortedSet[Cell]): SortedSet[Cell] = {
         var found = SortedSet[Cell]()
         val nums = set.map(cell => cell.value)
         val usable = limit + 1
@@ -368,19 +383,19 @@ package Sudoku {
             }
             cells = cells.reverse
 
-            nums.toList.combinations(limit).foreach {
-              xs =>
-                val nxs = xs.toSet
-                val hits = cells.filter {
-                  case (pos, ys) => (nxs == ys) || (ys -- nxs).size == 0
-                }
+            nums.toList.combinations(limit).foreach { xs =>
+              val nxs = xs.toSet
+              val hits = cells.filter {
+                case (pos, ys) => (nxs == ys) || (ys -- nxs).size == 0
+              }
 
-                if (hits.size == limit) {
-                  val hits2 = hits.map { case (pos, _nums) => pos }
-                  found = found ++ set.filter(
-                    cell => (nxs.contains(cell.value)
-                             && !hits2.contains(cell.pos)))
-                }
+              if (hits.size == limit) {
+                val hits2 = hits.map { case (pos, _nums) => pos }
+                found = found ++ set.filter(
+                  cell =>
+                    (nxs.contains(cell.value)
+                      && !hits2.contains(cell.pos)))
+              }
             }
           }
         }
@@ -395,23 +410,23 @@ package Sudoku {
       (SortedSet[Cell](), result)
     }
 
-    def find_naked_pairs () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_naked_pairs(): (SortedSet[Cell], SortedSet[Cell]) = {
       find_naked_groups(2)
     }
 
-    def find_naked_triples () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_naked_triples(): (SortedSet[Cell], SortedSet[Cell]) = {
       find_naked_groups(3)
     }
 
-    def find_naked_quads () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_naked_quads(): (SortedSet[Cell], SortedSet[Cell]) = {
       find_naked_groups(4)
     }
 
-    def numbers (set: SortedSet[Cell]) : List[Int] = {
+    def numbers(set: SortedSet[Cell]): List[Int] = {
       set.toList.map(_.value).sorted
     }
 
-    def number_counts(numbers: List[Int], target: Int) : Set[(Int, Int)] = {
+    def number_counts(numbers: List[Int], target: Int): Set[(Int, Int)] = {
       var result = List[(Int, Int)]()
       val unums = numbers.toSet
 
@@ -422,7 +437,7 @@ package Sudoku {
       result.toSet
     }
 
-    def number_counts_le(numbers: List[Int], target: Int) : Set[(Int, Int)] = {
+    def number_counts_le(numbers: List[Int], target: Int): Set[(Int, Int)] = {
       var result = List[(Int, Int)]()
       val unums = numbers.toSet
 
@@ -433,8 +448,8 @@ package Sudoku {
       result.toSet
     }
 
-    def find_hidden_groups(limit: Int) : (SortedSet[Cell], SortedSet[Cell]) = {
-      def find (set: SortedSet[Cell]): SortedSet[Cell] = {
+    def find_hidden_groups(limit: Int): (SortedSet[Cell], SortedSet[Cell]) = {
+      def find(set: SortedSet[Cell]): SortedSet[Cell] = {
         var found = SortedSet[Cell]()
 
         val nums = numbers(set)
@@ -447,23 +462,30 @@ package Sudoku {
           val nset = set.toList
 
           if (poss.size >= usable) {
-            unums.toList.combinations(limit).foreach {
-              xs => {
+            unums.toList.combinations(limit).foreach { xs =>
+              {
                 // need to have the numbers in exactly 'limit' cells
-                val tmp = xs.map {
-                  x => (x, nset.filter { cell => cell.value == x } . map {
-                    cell => cell.pos
-                  })
-                } . filter {
-                  case (n, poss) => 2 <= poss.length && poss.length <= limit
-                }
+                val tmp = xs
+                  .map { x =>
+                    (x,
+                     nset
+                       .filter { cell =>
+                         cell.value == x
+                       }
+                       .map { cell =>
+                         cell.pos
+                       })
+                  }
+                  .filter {
+                    case (n, poss) => 2 <= poss.length && poss.length <= limit
+                  }
 
                 val nposs = tmp.flatMap(_._2).toSet
 
                 if (tmp.length == limit && nposs.size == limit) {
-                  found = found ++ set.filter {
-                    cell => (nposs.contains(cell.pos)
-                             && !xs.contains(cell.value))
+                  found = found ++ set.filter { cell =>
+                    (nposs.contains(cell.pos)
+                    && !xs.contains(cell.value))
                   }
                 }
               }
@@ -481,19 +503,19 @@ package Sudoku {
       (SortedSet[Cell](), result)
     }
 
-    def find_hidden_pairs () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_hidden_pairs(): (SortedSet[Cell], SortedSet[Cell]) = {
       find_hidden_groups(2)
     }
 
-    def find_hidden_triples () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_hidden_triples(): (SortedSet[Cell], SortedSet[Cell]) = {
       find_hidden_groups(3)
     }
 
-    def find_hidden_quads () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_hidden_quads(): (SortedSet[Cell], SortedSet[Cell]) = {
       find_hidden_groups(4)
     }
 
-    def find_pointing_pairs () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_pointing_pairs(): (SortedSet[Cell], SortedSet[Cell]) = {
       def find(set: SortedSet[Cell],
                psamel: (Position, Position) => Boolean): SortedSet[Cell] = {
         var found = SortedSet[Cell]()
@@ -512,8 +534,8 @@ package Sudoku {
                       bset = bset.filter(cell => cell.value == x)
 
                       if (bset.size == 2) {
-                        found = found ++ nset.filter {
-                          cell => !(cell.pos == a.pos || cell.pos == b.pos)
+                        found = found ++ nset.filter { cell =>
+                          !(cell.pos == a.pos || cell.pos == b.pos)
                         }
                       }
                     }
@@ -531,7 +553,7 @@ package Sudoku {
         val set = get_row(i)
         val fun2 = (a: Position, b: Position) => {
           a.row == b.row
-        } : Boolean
+        }: Boolean
         found = found ++ find(set, fun2)
       }
 
@@ -539,7 +561,7 @@ package Sudoku {
         val set = get_column(i)
         val fun2 = (a: Position, b: Position) => {
           a.column == b.column
-        } : Boolean
+        }: Boolean
         found = found ++ find(set, fun2)
       }
 
@@ -549,7 +571,7 @@ package Sudoku {
       (SortedSet[Cell](), found)
     }
 
-    def find_ywings () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_ywings(): (SortedSet[Cell], SortedSet[Cell]) = {
       var found = SortedSet[Cell]()
 
       val coords = candidates.map(_.pos)
@@ -569,10 +591,10 @@ package Sudoku {
             for ((hinge, hnums) <- cells) {
               if (!(a == hinge || b == hinge || anums == bnums || anums == hnums) && tmp.size == 1) {
                 val z = tmp.toList(0)
-                if (hnums == ((anums ++ bnums) -- tmp) && hinge.sees(a) && hinge.sees(b)) {
-                  found = found ++ candidates.filter {
-                    cell =>
-                      cell.value == z && a.sees(cell.pos) && b.sees(cell.pos)
+                if (hnums == ((anums ++ bnums) -- tmp) && hinge.sees(a) && hinge
+                      .sees(b)) {
+                  found = found ++ candidates.filter { cell =>
+                    cell.value == z && a.sees(cell.pos) && b.sees(cell.pos)
                   }
                 }
               }
@@ -587,7 +609,7 @@ package Sudoku {
       (SortedSet[Cell](), found)
     }
 
-    def find_xwings () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_xwings(): (SortedSet[Cell], SortedSet[Cell]) = {
       def find(getset: Int => SortedSet[Cell],
                getotherset: Int => SortedSet[Cell],
                getpos: Position => Int,
@@ -610,28 +632,34 @@ package Sudoku {
                 for ((a, _) <- as) {
                   for ((b, _) <- bs) {
                     if (a == b) {
-                      val apos = aset.filter {
-                        cell => cell.value == a
-                      } . map {
-                        cell => getpos(cell.pos)
-                      }
-                      val bpos = bset.filter {
-                        cell => cell.value == b
-                      } . map {
-                        cell => getpos(cell.pos)
-                      }
+                      val apos = aset
+                        .filter { cell =>
+                          cell.value == a
+                        }
+                        .map { cell =>
+                          getpos(cell.pos)
+                        }
+                      val bpos = bset
+                        .filter { cell =>
+                          cell.value == b
+                        }
+                        .map { cell =>
+                          getpos(cell.pos)
+                        }
 
                       if (apos.size == 2 && apos == bpos) {
                         val napos = apos.toList
                         found = found ++ getotherset(napos(0)).filter(
-                          cell => (cell.value == a
-                                   && getotherpos(cell.pos) != i
-                                   && getotherpos(cell.pos) != j))
+                          cell =>
+                            (cell.value == a
+                              && getotherpos(cell.pos) != i
+                              && getotherpos(cell.pos) != j))
 
                         found = found ++ getotherset(napos(1)).filter(
-                          cell => (cell.value == a
-                                   && getotherpos(cell.pos) != i
-                                   && getotherpos(cell.pos) != j))
+                          cell =>
+                            (cell.value == a
+                              && getotherpos(cell.pos) != i
+                              && getotherpos(cell.pos) != j))
                       }
                     }
                   }
@@ -641,22 +669,23 @@ package Sudoku {
           }
         }
         found
-      } : SortedSet[Cell]
+      }: SortedSet[Cell]
 
       var found = SortedSet[Cell]()
-      found = found ++ find(get_row, get_column,
-                            (pos: Position) => { pos.column } : Int,
-                            (pos: Position) => { pos.row } : Int)
-      found = found ++ find(get_column, get_row,
-                            (pos: Position) => { pos.row } : Int,
-                            (pos: Position) => { pos.column } : Int)
+      found = found ++ find(get_row, get_column, (pos: Position) => {
+        pos.column
+      }: Int, (pos: Position) => { pos.row }: Int)
+      found = found ++ find(get_column,
+                            get_row,
+                            (pos: Position) => { pos.row }: Int,
+                            (pos: Position) => { pos.column }: Int)
       if (found.size > 0) {
         update_candidates(found)
       }
       (SortedSet[Cell](), found)
     }
 
-    def find_xyzwings () : (SortedSet[Cell], SortedSet[Cell]) = {
+    def find_xyzwings(): (SortedSet[Cell], SortedSet[Cell]) = {
       var found = SortedSet[Cell]()
 
       val coords = candidates.map(_.pos)
@@ -675,13 +704,13 @@ package Sudoku {
           for ((b, bnums) <- cells) {
             if (bnums.size == 2 && a != b && !(a.row < b.row)) {
               for ((w, wnums) <- cells) {
-                if (a != w && b != w && wnums.size == 3 && w.sees(a) && w.sees(b) && wnums == (anums ++ bnums)) {
+                if (a != w && b != w && wnums.size == 3 && w.sees(a) && w.sees(
+                      b) && wnums == (anums ++ bnums)) {
                   val z = anums.intersect(bnums).toList(0)
 
-                  found = found ++  candidates.filter {
-                    cell =>
-                      (cell.value == z && a.sees(cell.pos)
-                       && b.sees(cell.pos) && w.sees(cell.pos))
+                  found = found ++ candidates.filter { cell =>
+                    (cell.value == z && a.sees(cell.pos)
+                    && b.sees(cell.pos) && w.sees(cell.pos))
                   }
                 }
               }
@@ -696,8 +725,9 @@ package Sudoku {
       (SortedSet[Cell](), found)
     }
 
-    def find_boxline_reductions () : (SortedSet[Cell], SortedSet[Cell]) = {
-      def find(set: SortedSet[Cell], subset: SortedSet[Cell],
+    def find_boxline_reductions(): (SortedSet[Cell], SortedSet[Cell]) = {
+      def find(set: SortedSet[Cell],
+               subset: SortedSet[Cell],
                pinbox: Position => Boolean,
                pinline: Position => Boolean): SortedSet[Cell] = {
         var found = SortedSet[Cell]()
@@ -707,12 +737,12 @@ package Sudoku {
 
         if (foos.size != 2) {
           for ((x, _) <- foos) {
-            val cells = subset.filter {
-              cell => cell.value == x && pinbox(cell.pos)
+            val cells = subset.filter { cell =>
+              cell.value == x && pinbox(cell.pos)
             }
             if (cells.size == 2) {
-              found = found ++ set.filter {
-                cell => cell.value == x && !pinline(cell.pos)
+              found = found ++ set.filter { cell =>
+                cell.value == x && !pinline(cell.pos)
               }
             }
           }
@@ -728,18 +758,19 @@ package Sudoku {
           val (ulc, lrc) = get_box_bounds(box)
 
           for (i <- ulc.row to lrc.row) {
-            val xs = find(set, get_row(i),
-                          (pos: Position) => { pos.box == box } : Boolean,
-                          (pos: Position) => { pos.row == i } : Boolean)
+            val xs = find(set,
+                          get_row(i),
+                          (pos: Position) => { pos.box == box }: Boolean,
+                          (pos: Position) => { pos.row == i }: Boolean)
             if (xs.size > 0) {
               found = found ++ xs
             }
           }
 
           for (i <- ulc.column to lrc.column) {
-            val xs = find(set, get_column(i),
-                          (pos: Position) => { pos.box == box } : Boolean,
-                          (pos: Position) => { pos.column == i } : Boolean)
+            val xs = find(set, get_column(i), (pos: Position) => {
+              pos.box == box
+            }: Boolean, (pos: Position) => { pos.column == i }: Boolean)
             if (xs.size > 0) {
               found = found ++ xs
             }
@@ -755,18 +786,18 @@ package Sudoku {
   }
 
   object Solver {
-    def from_string(str: String) : HashMap[Position, Cell] = {
+    def from_string(str: String): HashMap[Position, Cell] = {
       if (str.length != 81) {
         throw new IllegalArgumentException("Invalid grid length")
       }
 
       var grid = HashMap[Position, Cell]()
 
-      var i : Int = 1
-      var j : Int = 1
+      var i: Int = 1
+      var j: Int = 1
 
       for (c <- str) {
-        val value : Int = c.toInt - '0'.toInt
+        val value: Int = c.toInt - '0'.toInt
         val pos = new Position(i, j)
         val cell = new Cell(pos, value)
 
@@ -796,7 +827,10 @@ package Sudoku {
       // boxline
       // val grid = "200068050008002000560004801000000530400000002097000000804300096000800300030490007"
       // val grid = "610320000300400000058600000009503620000040000023801500000006750000004003000058014"
-      val grid = "300000000970010000600583000200000900500621003008000005000435002000090056000000001"
+      // val grid = "300000000970010000600583000200000900500621003008000005000435002000090056000000001"
+      // coloring
+      val grid =
+        "000040705500780120170502006815407960467008051009615478950873010781264539002050007"
 
       val gridmap = Solver.from_string(grid)
       val solver = new Solver(gridmap)
@@ -807,12 +841,12 @@ package Sudoku {
       println(pos == grid)
       println(solver.candidates.size)
 
-      val map1 = gridmap.filter { case (k, v) => v.value != 0}
+      val map1 = gridmap.filter { case (k, v) => v.value != 0 }
       solver.solve
-      val map2 = gridmap.filter { case (k, v) => v.value != 0}
+      val map2 = gridmap.filter { case (k, v) => v.value != 0 }
 
       println(solver.candidates.size)
-      println(gridmap.filter { case (k, v) => v.value != 0})
+      println(gridmap.filter { case (k, v) => v.value != 0 })
 
       println(map2.keySet -- map1.keySet)
       println(s"Grid is valid: ${solver.is_valid}")
