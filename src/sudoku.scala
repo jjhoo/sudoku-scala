@@ -315,28 +315,23 @@ package Sudoku {
     }
 
     def findSinglesSimple(): (SortedSet[Cell], SortedSet[Cell]) = {
-      def find(set: SortedSet[Cell]): SortedSet[Cell] = {
-        var solved = SortedSet[Cell]()
-        val poss = set.map(_.pos)
+      var found = SortedSet[Cell]()
 
-        poss.foreach { pos =>
-          val xs = set.filter { x =>
-            x.pos == pos
-          }
-          if (xs.size == 1) {
-            solved += xs.firstKey
-          }
+      candidates
+        .groupBy(_.pos)
+        .filter {
+          case (pos, cells) => cells.size == 1
         }
-        solved
-      }
+        .foreach {
+          case (pos, cells) =>
+            found = found ++ cells
+        }
 
-      val result = eliminator(find)
-
-      if (result.size > 0) {
-        val removed = updateGrid(result)
-        (result, removed)
+      if (found.size > 0) {
+        val removed = updateGrid(found)
+        (found, removed)
       } else {
-        (result, SortedSet[Cell]())
+        (found, SortedSet[Cell]())
       }
     }
 
