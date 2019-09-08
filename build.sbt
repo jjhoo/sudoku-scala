@@ -11,6 +11,3 @@ libraryDependencies ++= List(
   junit4,
   specs2,
   junitifc)
-
-scalaSource in Compile := baseDirectory.value / "src"
-scalaSource in Test := baseDirectory.value / "test"
