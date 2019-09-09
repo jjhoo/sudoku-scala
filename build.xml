@@ -69,14 +69,14 @@
 
     <target name="compile" depends="init">
       <mkdir dir="${result.classes.dir}" />
-      <scalac srcdir="${src.dir}/src" destdir="${result.classes.dir}" classpathref="build.classpath">
+      <scalac srcdir="${src.dir}/src/main/scala" destdir="${result.classes.dir}" classpathref="build.classpath">
         <include name="*.scala"/>
       </scalac>
     </target>
 
     <target name="compile_test" depends="compile">
       <mkdir dir="${test.classes.dir}" />
-      <scalac srcdir="${src.dir}/test" destdir="${test.classes.dir}" classpathref="test.classpath">
+      <scalac srcdir="${src.dir}/src/test/scala" destdir="${test.classes.dir}" classpathref="test.classpath">
         <include name="*.scala"/>
       </scalac>
     </target>
@@ -84,7 +84,7 @@
     <target name="test" depends="compile_test">
       <jacoco:coverage destfile="${result.exec.file}">
         <java classname="org.scalatest.run" fork="true" classpathref="test.classpath">
-          <arg value="Sudoku.Test"/>
+          <arg value="test.Test"/>
         </java>
       </jacoco:coverage>
     </target>
