@@ -3,6 +3,9 @@ FROM debian:bullseye-slim
 COPY sbt.list /etc/apt/sources.list.d/sbt.list
 COPY scalasbt-release.gpg /etc/apt/trusted.gpg.d/scalasbt-release.gpg
 
+ENV DEBIAN_FRONTEND noninteractive
+ENV LAST_UPDATED 2021-11-27-001
+
 RUN apt-get update
 RUN apt-get install -y \
     ca-certificates \
