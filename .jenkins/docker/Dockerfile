@@ -1,8 +1,9 @@
 FROM debian:bullseye-slim
 
 ENV DEBIAN_FRONTEND noninteractive
-
 ENV LAST_UPDATED 2021-11-27-001
+
+COPY 42local.conf /etc/apt/apt.conf.d/42local.conf
 
 RUN apt-get update
 RUN apt-get install -y \
