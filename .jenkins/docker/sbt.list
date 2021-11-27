@@ -1,0 +1,2 @@
+deb https://repo.scala-sbt.org/scalasbt/debian all main
+# deb https://repo.scala-sbt.org/scalasbt/debian /
