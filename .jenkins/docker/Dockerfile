@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim
 
-COPY sbt.sources /etc/apt/sources.list.d/sbt.sources
+COPY sbt.list /etc/apt/sources.list.d/sbt.list
 COPY scalasbt-release.gpg /etc/apt/trusted.gpg.d/scalasbt-release.gpg
 
 RUN apt-get update
