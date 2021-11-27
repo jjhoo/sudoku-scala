@@ -5,6 +5,7 @@ COPY scalasbt-release.gpg /etc/apt/trusted.gpg.d/scalasbt-release.gpg
 
 RUN apt-get update
 RUN apt-get install -y \
+    ca-certificates \
     curl \
     git \
     openjdk-11-jdk-headless \
