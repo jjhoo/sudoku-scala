@@ -11,7 +11,7 @@ node {
             }
             stage('Upload coverage to codecov') {
                sh 'sbt ++2.11.12 coverageReport'
-               sh 'codecov'
+               sh '~/.local/bin/codecov --token $COVERAGE_TOKEN --no-color'
             }
         }
     }
