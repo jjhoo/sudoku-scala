@@ -1,6 +1,7 @@
 FROM debian:bullseye-slim
 
-ENV DEBIAN_FRONTEND noninteractive
+ARG JENKINS_UID=1001
+ENV DEBIAN_FRONTEND teletype
 ENV LAST_UPDATED 2021-11-27-001
 
 COPY 42local.conf /etc/apt/apt.conf.d/42local.conf
@@ -19,7 +20,7 @@ RUN apt-get update
 RUN apt-get install -y \
     sbt
 
-RUN useradd -u 1001 jenkins -m
+RUN useradd -u $JENKINS_UID jenkins -m
 RUN mkdir /home/jenkins/.sbt
 
 USER jenkins
