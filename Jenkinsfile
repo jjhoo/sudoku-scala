@@ -9,7 +9,7 @@ node {
         cache(maxCacheSize: 250, defaultBranch: 'master', caches: [
             [$class: 'ArbitraryFileCache', path: "${env.WORKSPACE_TMP}/sbt", cacheValidityDecidingFile: 'project.clj', compressionMethod: 'TARGZ']
         ]) {
-            customImage.inside('-v ${env.WORKSPACE_TMP}/sbt:/home/jenkins/.sbt') {
+            customImage.inside("-v ${env.WORKSPACE_TMP}/sbt:/home/jenkins/.sbt") {
                 stage('Build') {
                    sh 'sbt -no-colors ++2.12.14 compile'
                 }
