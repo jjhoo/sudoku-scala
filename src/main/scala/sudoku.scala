@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Jani J. Hakala <jjhakala@gmail.com> Jyväskylä, Finland
+// Copyright (c) 2016-2022 Jani J. Hakala <jjhakala@gmail.com>, Finland
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Affero General Public License as
