@@ -10,11 +10,11 @@ node {
             [$class: 'ArbitraryFileCache', path: "${env.WORKSPACE_TMP}/sbt", cacheValidityDecidingFile: 'build.sbt', compressionMethod: 'TARGZ']
         ]) {
             customImage.inside("-v ${env.WORKSPACE_TMP}/sbt:/home/jenkins/.sbt") {
-                stage('Build') {
-                   sh 'sbt -no-colors ++3.1.3 compile'
-                }
                 stage('Test') {
-                   sh 'sbt -no-colors ++3.1.3 test coverage'
+                   sh 'sbt -no-colors ++3.1.3 coverage test'
+                }
+                stage('Compile') {
+                   sh 'sbt -no-colors ++3.1.3 compile'
                 }
                 stage('Upload coverage to codecov') {
                    sh 'sbt -no-colors ++3.1.3 coverageReport'
