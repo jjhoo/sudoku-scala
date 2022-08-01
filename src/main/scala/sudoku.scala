@@ -226,6 +226,7 @@ class Solver(val grid: HashMap[Position, Cell]) {
           nums += cell.value
 
           it.hasNext && !exists
+        do ()
 
         !exists
       } else {
@@ -243,6 +244,7 @@ class Solver(val grid: HashMap[Position, Cell]) {
 
       i += 1
       i <= 9 && result
+    do ()
 
     result
   }
@@ -287,6 +289,7 @@ class Solver(val grid: HashMap[Position, Cell]) {
       removed = res._2
 
       it.hasNext && solved.size == 0 && removed.size == 0
+    do ()
 
     (solved, removed)
   }
