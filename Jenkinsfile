@@ -7,7 +7,7 @@ node {
 
     withCredentials([string(credentialsId: 'coverage-token', variable: 'COVERAGE_TOKEN')]) {
         cache(maxCacheSize: 250, defaultBranch: 'master', caches: [
-            [$class: 'ArbitraryFileCache', path: "${env.WORKSPACE_TMP}/sbt", cacheValidityDecidingFile: 'project/plugins.sbt', compressionMethod: 'TARGZ']
+            [$class: 'ArbitraryFileCache', path: "${env.WORKSPACE_TMP}/sbt", cacheValidityDecidingFile: 'build.sbt', compressionMethod: 'TARGZ']
         ]) {
             customImage.inside("-v ${env.WORKSPACE_TMP}/sbt:/home/jenkins/.sbt") {
                 stage('Build') {
