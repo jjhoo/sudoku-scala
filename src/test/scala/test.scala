@@ -91,11 +91,6 @@ class Test extends AnyFlatSpec with Matchers {
     }
   }
 
-  it should "be bad comparison" in {
-    val pos = new Position(1, 1)
-    assert(pos != 1)
-  }
-
   it should "be invalid grid" in {
     val grid = "300030802020600040009504060090000200780000034006000070050401300060007010102080000"
 
