@@ -2,7 +2,7 @@ FROM debian:bullseye-slim
 
 ARG JENKINS_UID=1001
 ENV DEBIAN_FRONTEND teletype
-ENV LAST_UPDATED 2021-11-27-001
+ENV LAST_UPDATED 2022-08-01-001
 
 COPY 42local.conf /etc/apt/apt.conf.d/42local.conf
 
@@ -26,4 +26,3 @@ USER jenkins
 WORKDIR /home/jenkins
 RUN mkdir /home/jenkins/.sbt
 RUN pip3 install --user codecov
-
