@@ -2,7 +2,7 @@ package test
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.{FlatSpec, Matchers}
 
 import fi.koodisuo.sudoku._
 
