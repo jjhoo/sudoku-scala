@@ -31,7 +31,6 @@ object Solver {
     println(s"Grid is valid: ${solver.isValid}")
 
     println(pos == other)
-    println(pos == grid)
     println(solver.candidates.size)
 
     val map1 = gridmap.filter { case (k, v) => v.value != 0 }
