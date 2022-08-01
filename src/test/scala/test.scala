@@ -2,12 +2,13 @@ package test
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.flatspec.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import fi.koodisuo.sudoku._
 
 @RunWith(classOf[JUnitRunner])
-class Test extends FlatSpec with Matchers {
+class Test extends AnyFlatSpec with Matchers {
   it should "be solvable (x-wing)" in {
     val grid = "000030802020600040009504060090000200780000034006000070050401300060007010102080000"
 
