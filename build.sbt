@@ -1,6 +1,6 @@
 import sbt._
 
-ThisBuild / scalaVersion := "2.12.14"
+ThisBuild / scalaVersion := "3.1.3"
 ThisBuild / organization := "fi.koodisuo"
 
 val scalatest = "org.scalatest" %% "scalatest" % "3.0.8" % Test
