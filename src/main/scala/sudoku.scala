@@ -101,16 +101,16 @@ class Solver(val grid: HashMap[Position, Cell]) {
     }
   }
 
-  def initSolved {
+  def initSolved =
     solved = SortedSet[Cell]()
     for ((pos, cell) <- grid) {
       if (cell.isSolved) {
         solved += cell
       }
     }
-  }
 
-  def initUnsolved {
+
+  def initUnsolved =
     unsolved = SortedSet[Cell]()
 
     for ((pos, cell) <- grid) {
@@ -118,9 +118,9 @@ class Solver(val grid: HashMap[Position, Cell]) {
         unsolved += cell
       }
     }
-  }
 
-  def initCandidates {
+
+  def initCandidates =
     candidates = SortedSet[Cell]()
 
     unsolved.foreach { cell =>
@@ -128,7 +128,7 @@ class Solver(val grid: HashMap[Position, Cell]) {
         candidates += new Cell(cell.pos, i)
       }
     }
-  }
+
 
   def updateCell(cell: Cell): SortedSet[Cell] = {
     val removed: SortedSet[Cell] = candidates.filter(
