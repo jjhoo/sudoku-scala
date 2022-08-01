@@ -21,8 +21,9 @@ RUN apt-get install -y \
     sbt
 
 RUN useradd -u $JENKINS_UID jenkins -m
-RUN mkdir /home/jenkins/.sbt
 
 USER jenkins
+WORKDIR /home/jenkins
+RUN mkdir /home/jenkins/.sbt
 RUN pip3 install --user codecov
 
