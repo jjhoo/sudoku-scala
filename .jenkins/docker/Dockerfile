@@ -24,5 +24,6 @@ RUN useradd -u $JENKINS_UID jenkins -m
 
 USER jenkins
 WORKDIR /home/jenkins
+RUN mkdir /home/jenkins/.ivy2
 RUN mkdir /home/jenkins/.sbt
 RUN pip3 install --user codecov
