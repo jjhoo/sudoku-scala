@@ -146,9 +146,8 @@ class Solver(val grid: HashMap[Position, Cell]) {
     updateCell(cell)
   }
 
-  def updateCandidates(found: SortedSet[Cell]) {
+  def updateCandidates(found: SortedSet[Cell]) =
     candidates = candidates -- found
-  }
 
   def updateGrid(found: SortedSet[Cell]): SortedSet[Cell] = {
     var removed = SortedSet[Cell]()
@@ -287,7 +286,7 @@ class Solver(val grid: HashMap[Position, Cell]) {
     (solved, removed)
   }
 
-  def solve {
+  def solve =
     var cont = true
     var solved = SortedSet[Cell]()
     var removed = SortedSet[Cell]()
@@ -313,7 +312,6 @@ class Solver(val grid: HashMap[Position, Cell]) {
         println("no progress")
       }
     }
-  }
 
   def findSinglesSimple(): (SortedSet[Cell], SortedSet[Cell]) = {
     var found = SortedSet[Cell]()
