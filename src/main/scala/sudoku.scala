@@ -220,11 +220,13 @@ class Solver(val grid: HashMap[Position, Cell]) {
 
       if (set.size > 0) {
         val it = set.iterator
-        do {
+        while
           val cell = it.next
           exists = nums.contains(cell.value)
           nums += cell.value
-        } while (it.hasNext && !exists)
+
+          it.hasNext && !exists
+
         !exists
       } else {
         true
@@ -234,13 +236,14 @@ class Solver(val grid: HashMap[Position, Cell]) {
     var result = true
     var i = 1
 
-    do {
+    while
       val tmp = (fun(getSolvedRow(i)) && fun(getSolvedColumn(i))
         && fun(getSolvedBox(i)))
       if (!tmp) result = false
 
       i += 1
-    } while (i <= 9 && result)
+      i <= 9 && result
+
     result
   }
 
@@ -277,12 +280,14 @@ class Solver(val grid: HashMap[Position, Cell]) {
     var removed = SortedSet[Cell]()
     val it = finders.iterator
 
-    do {
+    while
       val fun = it.next
       val res = fun()
       solved = res._1
       removed = res._2
-    } while (it.hasNext && solved.size == 0 && removed.size == 0)
+
+      it.hasNext && solved.size == 0 && removed.size == 0
+
     (solved, removed)
   }
 
