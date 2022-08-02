@@ -283,8 +283,7 @@ class Solver(val grid: HashMap[Position, Cell]) {
     val it = finders.iterator
 
     while
-      val fun = it.next
-      val res = fun()
+      val res = it.next
       solved = res._1
       removed = res._2
 
